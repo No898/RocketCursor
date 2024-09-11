@@ -45,7 +45,17 @@ export default App;
 - **Flame Effect**: The rocket displays a flame animation when the cursor is moving.
 - **Customizable**: Easily adjust the size, rotation threshold, and visibility of the rocket.
 
+## Demo
+
+Here’s a demo of the Rocket Cursor in action:
+
+![Rocket Cursor Demo](./assets/rocket-cursor-demo.gif)
+
 ## Changelog
+
+### 1.0.2
+
+- Added demo GIF in the README file.
 
 ### 1.0.1
 
