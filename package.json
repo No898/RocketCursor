@@ -1,6 +1,6 @@
 {
   "name": "rocket-cursor-component",
-  "version": "1.0.3",
+  "version": "1.0.2",
   "description": "A customizable React component that replaces the cursor with an animated rocket.",
   "main": "dist/rocket.Cursor.js",
   "types": "dist/rocket.Cursor.d.ts",
