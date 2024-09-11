@@ -45,6 +45,16 @@ export default App;
 - **Flame Effect**: The rocket displays a flame animation when the cursor is moving.
 - **Customizable**: Easily adjust the size, rotation threshold, and visibility of the rocket.
 
+## Changelog
+
+### 1.0.0
+
+- Initial release of the Rocket Cursor component.
+
+## Author
+
+[No898](https://github.com/No898)
+
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.

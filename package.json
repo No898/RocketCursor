@@ -13,7 +13,10 @@
     "react": "^17.0.0"
   },
   "devDependencies": {
-    "typescript": "^4.0.0",
-    "react": "^17.0.0"
+    "react": "^17.0.0",
+    "typescript": "^4.0.0"
+  },
+  "dependencies": {
+    "rocket-cursor-component": "^1.0.0"
   }
 }
