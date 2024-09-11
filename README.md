@@ -49,7 +49,7 @@ export default App;
 
 Here’s a demo of the Rocket Cursor in action:
 
-![Rocket Cursor Demo](./assets/rocket-cursor-demo.gif)
+![Rocket Cursor Demo](https://github.com/No898/RocketCursor/raw/main/assets/rocket-cursor-demo.gif)
 
 ## Changelog
 
