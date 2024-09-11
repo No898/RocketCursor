@@ -47,7 +47,7 @@ export default App;
 
 ## Changelog
 
-### 1.0.0
+### 1.0.1
 
 - Initial release of the Rocket Cursor component.
 
