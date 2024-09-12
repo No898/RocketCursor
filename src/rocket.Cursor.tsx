@@ -1,11 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import React from "react";
 
-// Props interface for customizing the size, rotation sensitivity, and visibility of the rocket cursor
 interface RocketCursorProps {
-  size?: number; // Rocket size (default is 50)
-  threshold?: number; // Threshold for rotating the rocket (default is 10)
-  isVisible?: boolean; // Control visibility of the rocket (default is true)
+  size?: number;
+  threshold?: number;
+  isVisible?: boolean;
 }
 
 const RocketCursor: React.FC<RocketCursorProps> = ({
@@ -13,43 +12,51 @@ const RocketCursor: React.FC<RocketCursorProps> = ({
   threshold = 10,
   isVisible = true,
 }) => {
-  // Track cursor position
   const [position, setPosition] = useState({ x: 0, y: 0 });
-  // Track rocket's rotation angle
   const [angle, setAngle] = useState(0);
-  // Track if the cursor is moving
   const [isMoving, setIsMoving] = useState(true);
-
-  // Store last significant cursor position to calculate movement
+  const [visible, setVisible] = useState(isVisible);
   const lastSignificantPosition = useRef({ x: 0, y: 0 });
   const lastMoveTimestamp = useRef(Date.now());
 
-  // Update the position and angle when the mouse moves
   const handleMouseMove = useCallback(
     (e: { clientX: any; clientY: any }) => {
       const currentPosition = { x: e.clientX, y: e.clientY };
       setPosition(currentPosition);
 
-      // Calculate distance moved to decide if the rocket should rotate
       const dx = currentPosition.x - lastSignificantPosition.current.x;
       const dy = currentPosition.y - lastSignificantPosition.current.y;
+
       const distance = Math.sqrt(dx * dx + dy * dy);
 
-      // Rotate if the movement exceeds the threshold
       if (distance > threshold) {
         const newAngle = Math.atan2(dy, dx) * (180 / Math.PI) + 45;
         setAngle(newAngle);
         lastSignificantPosition.current = currentPosition;
       }
 
-      // Mark as moving
       lastMoveTimestamp.current = Date.now();
       setIsMoving(true);
+      setVisible(true);
     },
     [threshold]
   );
 
-  // Check if the cursor has stopped moving
+  const handleMouseOut = (e: MouseEvent) => {
+    if (
+      !e.relatedTarget ||
+      (e.relatedTarget as HTMLElement).nodeName === "HTML"
+    ) {
+      setVisible(false);
+    }
+  };
+
+  const handleVisibilityChange = () => {
+    if (document.visibilityState === "visible") {
+      setVisible(true);
+    }
+  };
+
   useEffect(() => {
     const checkIfStopped = () => {
       const now = Date.now();
@@ -60,22 +67,22 @@ const RocketCursor: React.FC<RocketCursorProps> = ({
 
     const intervalId = setInterval(checkIfStopped, 100);
 
-    // Listen to mousemove events
     window.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseout", handleMouseOut);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
-    // Cleanup event listeners on unmount
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseout", handleMouseOut);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       clearInterval(intervalId);
     };
   }, [handleMouseMove]);
 
-  // Hide the rocket if not visible
-  if (!isVisible) {
+  if (!isVisible || !visible) {
     return null;
   }
 
-  // Render the rocket SVG at the cursor position with the correct rotation
   return (
     <div
       style={{
