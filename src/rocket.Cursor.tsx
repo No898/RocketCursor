@@ -20,7 +20,14 @@ const RocketCursor: React.FC<RocketCursorProps> = ({
   const lastMoveTimestamp = useRef(Date.now());
 
   const handleMouseMove = useCallback(
-    (e: { clientX: any; clientY: any }) => {
+    (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      // hide rocket cursor if there is class "no-rocket-cursor"
+      if (target.closest(".no-rocket-cursor")) {
+        setVisible(false);
+        return;
+      }
+
       const currentPosition = { x: e.clientX, y: e.clientY };
       setPosition(currentPosition);
 

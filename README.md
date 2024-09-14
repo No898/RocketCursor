@@ -54,7 +54,7 @@ Here’s a demo of the Rocket Cursor in action:
 
 ## Changelog
 
-### 1.0.8
+### 1.0.9
 
 - Added support to hide the Rocket Cursor on elements with the class `no-rocket-cursor`.
 

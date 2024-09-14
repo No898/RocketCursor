@@ -8,6 +8,12 @@ const RocketCursor = ({ size = 50, threshold = 10, isVisible = true, }) => {
     const lastSignificantPosition = useRef({ x: 0, y: 0 });
     const lastMoveTimestamp = useRef(Date.now());
     const handleMouseMove = useCallback((e) => {
+        const target = e.target;
+        // hide rocket cursor if there is class "no-rocket-cursor"
+        if (target.closest(".no-rocket-cursor")) {
+            setVisible(false);
+            return;
+        }
         const currentPosition = { x: e.clientX, y: e.clientY };
         setPosition(currentPosition);
         const dx = currentPosition.x - lastSignificantPosition.current.x;
