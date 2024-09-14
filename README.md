@@ -44,6 +44,7 @@ export default App;
 - **Rotation**: The rocket rotates in the direction of the cursor movement.
 - **Flame Effect**: The rocket displays a flame animation when the cursor is moving.
 - **Customizable**: Easily adjust the size, rotation threshold, and visibility of the rocket.
+- **Element-Specific Visibility**: Automatically hides the rocket cursor over elements with the class `no-rocket-cursor`.
 
 ## Demo
 
@@ -52,6 +53,10 @@ Here’s a demo of the Rocket Cursor in action:
 ![Rocket Cursor Demo](https://github.com/No898/RocketCursor/raw/main/assets/rocket-cursor-demo.gif)
 
 ## Changelog
+
+### 1.0.8
+
+- Added support to hide the Rocket Cursor on elements with the class `no-rocket-cursor`.
 
 ### 1.0.2
 
