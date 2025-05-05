@@ -14,15 +14,15 @@ npm install rocket-cursor-component
 
 Here's an example of how to use the `RocketCursor` component in your React app:
 
-```jsx
+```tsx
 import React from "react";
-import RocketCursor from "rocket-cursor-component";
+import RocketCursor from "rocket-cursor-component"; 
 
 function App() {
   return (
     <div>
       <h1>Your app content here</h1>
-      <RocketCursor size={60} threshold={15} />
+      <RocketCursor size={60} threshold={15} flameHideTimeout={300} />
     </div>
   );
 }
@@ -32,27 +32,37 @@ export default App;
 
 ### Props
 
-| Prop        | Type    | Default | Description                                |
-| ----------- | ------- | ------- | ------------------------------------------ |
-| `size`      | number  | `50`    | The size of the rocket cursor              |
-| `threshold` | number  | `10`    | Distance to move before the rocket rotates |
-| `isVisible` | boolean | `true`  | Show or hide the rocket cursor             |
+| Prop               | Type    | Default | Description                                                |
+| ------------------ | ------- | ------- | ---------------------------------------------------------- |
+| `size`             | number  | `50`    | The size of the rocket cursor in pixels.                   |
+| `threshold`        | number  | `10`    | Minimum distance (pixels) to move before the rocket rotates. |
+| `isVisible`        | boolean | `true`  | Initial visibility state of the rocket cursor.             |
+| `flameHideTimeout` | number  | `300`   | Time in milliseconds before the flame hides after stopping.|
 
 ## Features
 
 - **Custom Cursor**: Replaces the default mouse cursor with a rocket that follows the cursor.
 - **Rotation**: The rocket rotates in the direction of the cursor movement.
 - **Flame Effect**: The rocket displays a flame animation when the cursor is moving.
-- **Customizable**: Easily adjust the size, rotation threshold, and visibility of the rocket.
+- **Customizable**: Easily adjust the size, rotation threshold, visibility, and flame disappearance time.
 - **Element-Specific Visibility**: Automatically hides the rocket cursor over elements with the class `no-rocket-cursor`.
 
 ## Demo
 
-Here’s a demo of the Rocket Cursor in action:
+Here's a demo of the Rocket Cursor in action:
 
 ![Rocket Cursor Demo](https://github.com/No898/RocketCursor/raw/main/assets/rocket-cursor-demo.gif)
 
 ## Changelog
+
+
+### 1.1.1
+- Fixed a typo in README.md.
+
+### 1.1.0 
+- Refactored SVG into separate components.
+- Added `flameHideTimeout` prop for configurable flame duration.
+- Improved code structure and efficiency.
 
 ### 1.0.9
 
