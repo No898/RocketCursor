@@ -1,6 +1,6 @@
 {
   "name": "rocket-cursor-component",
-  "version": "1.1.1",
+  "version": "2.0.0",
   "description": "A customizable React component that replaces the cursor with an animated rocket, featuring rotation and flame effects.",
   "main": "dist/rocket.Cursor.js",
   "types": "dist/rocket.Cursor.d.ts",
@@ -28,15 +28,18 @@
   "author": "Tomas Dinh",
   "license": "MIT",
   "peerDependencies": {
-    "react": ">=16.8.0",
-    "react-dom": ">=16.8.0"
+    "react": ">=19.0.0",
+    "react-dom": ">=19.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.15.3",
-    "@types/react": "^18.3.20",
-    "@types/react-dom": "^18.3.0",
-    "react": ">=16.8.0",
-    "react-dom": ">=16.8.0",
-    "typescript": "^4.0.0"
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
   }
 }

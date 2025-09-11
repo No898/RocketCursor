@@ -1,19 +1,21 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import React from "react";
+import React, { useEffect, useRef, useId, useMemo, useCallback, startTransition } from "react";
 
-interface RocketCursorProps {
+type Props = {
   size?: number;
   threshold?: number;
-  isVisible?: boolean;
   flameHideTimeout?: number;
-}
+  isVisible?: boolean;
+  hideCursor?: boolean;
+  offsetX?: number;
+  offsetY?: number;
+};
 
-// Komponenta pro SVG Plamene
-const FlameSvg = () => (
+// SVG components for flame and rocket visuals
+const FlameSvg = ({ gradientId }: { gradientId: string }) => (
   <g transform="translate(1.2245, 350.449) rotate(45) scale(0.5, -0.5)">
     <defs>
       <linearGradient
-        id="fireGradient"
+        id={gradientId}
         gradientUnits="userSpaceOnUse"
         x1="94.141"
         y1="255"
@@ -26,7 +28,7 @@ const FlameSvg = () => (
     </defs>
     <path
       d="M187.899,164.809 C185.803,214.868 144.574,254.812 94.000,254.812 C42.085,254.812 -0.000,211.312 -0.000,160.812 C-0.000,154.062 -0.121,140.572 10.000,117.812 C16.057,104.191 19.856,95.634 22.000,87.812 C23.178,83.513 25.469,76.683 32.000,87.812 C35.851,94.374 36.000,103.812 36.000,103.812 C36.000,103.812 50.328,92.817 60.000,71.812 C74.179,41.019 62.866,22.612 59.000,9.812 C57.662,5.384 56.822,-2.574 66.000,0.812 C75.352,4.263 100.076,21.570 113.000,39.812 C131.445,65.847 138.000,90.812 138.000,90.812 C138.000,90.812 143.906,83.482 146.000,75.812 C148.365,67.151 148.400,58.573 155.999,67.813 C163.226,76.600 173.959,93.113 180.000,108.812 C190.969,137.321 187.899,164.809 187.899,164.809 Z"
-      fill="url(#fireGradient)"
+      fill={`url(#${gradientId})`}
       fillRule="evenodd"
     />
     <path
@@ -42,7 +44,6 @@ const FlameSvg = () => (
   </g>
 );
 
-// Komponenta pro SVG Rakety
 const RocketSvg = () => (
   <g transform="translate(0, 0)">
     <path
@@ -84,119 +85,142 @@ const RocketSvg = () => (
   </g>
 );
 
-const RocketCursor: React.FC<RocketCursorProps> = ({
+const RocketCursor: React.FC<Props> = ({
   size = 50,
   threshold = 10,
-  isVisible = true,
   flameHideTimeout = 300,
+  isVisible = true,
+  hideCursor = false,
+  offsetX = -15, // Compensation for SVG geometry
+  offsetY = 0,
 }) => {
-  const [position, setPosition] = useState({ x: -size, y: -size });
-  const [angle, setAngle] = useState(0);
-  const [isMoving, setIsMoving] = useState(false);
-  const [visible, setVisible] = useState(isVisible);
-  const lastSignificantPosition = useRef({ x: 0, y: 0 });
-  const lastMoveTimestamp = useRef(Date.now());
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  const handleMouseMove = useCallback(
-    (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (target.closest(".no-rocket-cursor")) {
-        setVisible(false);
-        return;
-      }
-
-      setVisible(true);
-      const currentPosition = { x: e.clientX, y: e.clientY };
-      setPosition(currentPosition);
-
-      const dx = currentPosition.x - lastSignificantPosition.current.x;
-      const dy = currentPosition.y - lastSignificantPosition.current.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-
-      if (distance > threshold) {
-        const newAngle = Math.atan2(dy, dx) * (180 / Math.PI) + 45;
-        setAngle(newAngle);
-        lastSignificantPosition.current = currentPosition;
-      }
-
-      setIsMoving(true);
-      lastMoveTimestamp.current = Date.now();
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-      timeoutRef.current = setTimeout(() => {
-        setIsMoving(false);
-      }, flameHideTimeout);
-    },
-    [threshold, flameHideTimeout]
-  );
-
-  const handleMouseOut = (e: MouseEvent) => {
-    if (
-      !e.relatedTarget ||
-      (e.relatedTarget as HTMLElement).nodeName === "HTML"
-    ) {
-      setVisible(false);
-    }
-  };
-
-  const handleVisibilityChange = () => {
-    if (document.visibilityState === "visible") {
-      setVisible(true);
-    }
-  };
+  const gradientId = useId();
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const flameRef = useRef<SVGGElement | null>(null);
+  const target = useRef({ 
+    x: typeof window !== 'undefined' ? window.innerWidth / 2 : 0, 
+    y: typeof window !== 'undefined' ? window.innerHeight / 2 : 0 
+  });
+  const current = useRef({ x: target.current.x, y: target.current.y });
+  const angleRef = useRef(0);
+  const lastMoveTs = useRef<number>(Date.now());
+  const lastSignificantPosition = useRef({ x: target.current.x, y: target.current.y });
+  const rafRef = useRef<number | null>(null);
+  const visibleRef = useRef<boolean>(isVisible);
 
   useEffect(() => {
-    const initialX = window.innerWidth / 2;
-    const initialY = window.innerHeight / 2;
-    setPosition({ x: initialX, y: initialY });
-    lastSignificantPosition.current = { x: initialX, y: initialY };
+    visibleRef.current = isVisible;
+    if (wrapperRef.current) wrapperRef.current.style.display = isVisible ? "block" : "none";
+    
+    // Apply cursor hiding to body if requested
+    if (hideCursor) {
+      document.body.style.cursor = 'none';
+    } else {
+      document.body.style.cursor = '';
+    }
+    
+    return () => {
+      // Cleanup: restore cursor when component unmounts
+      document.body.style.cursor = '';
+    };
+  }, [isVisible, hideCursor]);
 
-    window.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseout", handleMouseOut);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
+  useEffect(() => {
+    const onMouseMove = useCallback((e: MouseEvent) => {
+      // Toggle visibility if hovering excluded elements
+      const t = e.target as Element | null;
+      const exclude = t && t.closest && t.closest(".no-rocket-cursor");
+      const show = !exclude && visibleRef.current;
+      if (wrapperRef.current) wrapperRef.current.style.display = show ? "block" : "none";
+      if (!show) return;
+
+      // Set rocket position on cursor with optional offset
+      target.current.x = e.clientX + offsetX;
+      target.current.y = e.clientY + offsetY;
+
+      lastMoveTs.current = Date.now();
+
+      // Update angle based on movement direction from previous position
+      const moveDx = target.current.x - lastSignificantPosition.current.x;
+      const moveDy = target.current.y - lastSignificantPosition.current.y;
+      const moveDist = Math.hypot(moveDx, moveDy);
+      if (moveDist > threshold) {
+        startTransition(() => {
+          angleRef.current = Math.atan2(moveDy, moveDx) * (180 / Math.PI) + 45;
+          lastSignificantPosition.current = { x: target.current.x, y: target.current.y };
+        });
+      }
+    }, [offsetX, offsetY, threshold]);
+
+    const onMouseOut = useCallback((e: MouseEvent) => {
+      const rel = e.relatedTarget as Element | null;
+      if (!rel || rel.nodeName === "HTML") {
+        if (wrapperRef.current) wrapperRef.current.style.display = "none";
+      }
+    }, []);
+
+    window.addEventListener("mousemove", onMouseMove, { passive: true });
+    document.addEventListener("mouseout", onMouseOut);
+
+    const step = () => {
+      // Move rocket directly to cursor position (no easing)
+      current.current.x = target.current.x;
+      current.current.y = target.current.y;
+      
+      // Show flame based on recent mouse movement
+      const showFlame = Date.now() - lastMoveTs.current < flameHideTimeout;
+
+      const el = wrapperRef.current;
+      if (el) {
+        el.style.transform = `translate3d(${current.current.x}px, ${current.current.y}px, 0)`;
+        
+        // Rotation is now in SVG element  
+        const svg = el.querySelector('svg');
+        if (svg) {
+          svg.style.transform = `translate(-50%, -50%) rotate(${angleRef.current}deg)`;
+        }
+      }
+      if (flameRef.current) {
+        flameRef.current.style.opacity = showFlame ? "1" : "0";
+      }
+      rafRef.current = requestAnimationFrame(step);
+    };
+    rafRef.current = requestAnimationFrame(step);
 
     return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseout", handleMouseOut);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
+      window.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseout", onMouseOut);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [handleMouseMove]);
+  }, [flameHideTimeout, threshold, offsetX, offsetY]);
 
-  const wrapperStyle: React.CSSProperties = {
-    position: "fixed",
-    left: position.x,
-    top: position.y,
-    transform: `translate(-50%, -50%) rotate(${angle}deg)`,
-    pointerEvents: "none",
+  const wrapperStyle = useMemo(() => ({
+    position: "fixed" as const,
+    left: 0,
+    top: 0,
+    pointerEvents: "none" as const,
     zIndex: 9999,
     width: `${size}px`,
     height: `${size * 1.5}px`,
-    transition: 'left 0.05s linear, top 0.05s linear',
-  };
+    willChange: "transform",
+  }), [size]);
 
-  const svgStyle: React.CSSProperties = {
-    width: "100%",
-    height: "100%",
-    display: 'block',
-  };
-
-  if (!isVisible || !visible) {
-    return null;
-  }
+  const svgStyle = useMemo(() => ({ 
+    width: "100%", 
+    height: "100%", 
+    display: "block",
+  }), []);
 
   return (
-    <div style={wrapperStyle}>
+    <div ref={wrapperRef} style={wrapperStyle}>
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 416.449 516.449"
         style={svgStyle}
       >
-        {isMoving && <FlameSvg />}
+        <g ref={flameRef}>
+          <FlameSvg gradientId={gradientId} />
+        </g>
         <RocketSvg />
       </svg>
     </div>
