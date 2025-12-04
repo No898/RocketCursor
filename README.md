@@ -24,23 +24,22 @@ Here's an example of how to use the `RocketCursor` component in your React app:
 
 ```tsx
 import React from "react";
-import RocketCursor from "rocket-cursor-component"; 
+import RocketCursor from "rocket-cursor-component";
 
 function App() {
   return (
     <div>
       <h1>Your app content here</h1>
-      {/* Basic usage - cursor replaced with rocket */}
+      {/* Basic usage - rocket replaces cursor */}
       <RocketCursor />
-      
-      {/* Advanced usage - rocket centered on cursor with normal cursor visible */}
-      <RocketCursor 
-        size={60} 
-        threshold={15} 
-        flameHideTimeout={300}
-        hideCursor={false}  // Keep normal cursor visible
-        offsetX={-15}       // Fine-tune rocket position
-        offsetY={0}
+
+      {/* Tuned usage - visible system cursor, snappier follow */}
+      <RocketCursor
+        size={60}
+        threshold={12}
+        flameHideTimeout={250}
+        hideCursor={false}   // keep native cursor visible
+        followSpeed={0.35}   // 0-1, higher = snappier
       />
     </div>
   );
@@ -58,14 +57,13 @@ export default App;
 | `isVisible`        | boolean | `true`  | Initial visibility state of the rocket cursor.             |
 | `flameHideTimeout` | number  | `300`   | Time in milliseconds before the flame hides after stopping.|
 | `hideCursor`       | boolean | `false` | Whether to hide the normal cursor (true) or show both.     |
-| `offsetX`          | number  | `-15`   | Horizontal offset in pixels from cursor position.          |
-| `offsetY`          | number  | `0`     | Vertical offset in pixels from cursor position.            |
+| `followSpeed`      | number  | `0.18`  | Follow smoothing (0-1). Higher = faster/snappier following. |
 
 ## Features
 
 - **React 19+ Optimized**: Built specifically for React 19+ with latest performance optimizations
 - **Dual Cursor Mode**: Choose to replace cursor completely or show rocket alongside normal cursor
-- **Custom Cursor**: Replaces the default mouse cursor with a rocket that follows the cursor
+- **Custom Cursor**: Replaces the default mouse cursor with a rocket that follows the cursor and aligns its nose to the pointer
 - **Smart Rotation**: The rocket rotates in the direction of cursor movement with configurable threshold
 - **Flame Effect**: Dynamic flame animation when the cursor is moving
 - **Collision-Free**: Uses React 19's `useId()` to prevent SVG gradient ID collisions
@@ -80,7 +78,14 @@ Here's a demo of the Rocket Cursor in action:
 
 ![Rocket Cursor Demo](https://github.com/No898/RocketCursor/raw/main/assets/rocket-cursor-demo.gif)
 
+> Local demo (not published to npm): run `npm install` and `npm run dev`, then open the Vite dev server printed in the console.
+
 ## Changelog
+
+### 2.1.0
+- **NEW**: Added `followSpeed` prop for configurable smoothing (nose snaps to cursor when close)
+- **Changed**: Rocket aligns by its nose to the cursor position (manual offsets removed)
+- **Changed**: Demo cleaned up to match the new API (no offset sliders)
 
 ### 2.0.0 (React 19+ Only)
 - **BREAKING**: Now requires React 19.0.0 or higher

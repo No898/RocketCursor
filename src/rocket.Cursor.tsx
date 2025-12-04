@@ -1,4 +1,11 @@
-import React, { useEffect, useRef, useId, useMemo, useCallback, startTransition } from "react";
+import React, {
+  useEffect,
+  useRef,
+  useId,
+  useMemo,
+  useCallback,
+  useState,
+} from "react";
 
 type Props = {
   size?: number;
@@ -6,8 +13,7 @@ type Props = {
   flameHideTimeout?: number;
   isVisible?: boolean;
   hideCursor?: boolean;
-  offsetX?: number;
-  offsetY?: number;
+  followSpeed?: number; // 0-1, higher = faster reaction (keeps the older snappy feel)
 };
 
 // SVG components for flame and rocket visuals
@@ -91,125 +97,175 @@ const RocketCursor: React.FC<Props> = ({
   flameHideTimeout = 300,
   isVisible = true,
   hideCursor = false,
-  offsetX = -15, // Compensation for SVG geometry
-  offsetY = 0,
+  followSpeed = 0.18, // default smoothing similar to původní chování
 }) => {
   const gradientId = useId();
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const flameRef = useRef<SVGGElement | null>(null);
-  const target = useRef({ 
-    x: typeof window !== 'undefined' ? window.innerWidth / 2 : 0, 
-    y: typeof window !== 'undefined' ? window.innerHeight / 2 : 0 
+  const target = useRef({
+    x: typeof window !== "undefined" ? window.innerWidth / 2 : 0,
+    y: typeof window !== "undefined" ? window.innerHeight / 2 : 0,
   });
-  const current = useRef({ x: target.current.x, y: target.current.y });
+  const current = useRef({ ...target.current });
   const angleRef = useRef(0);
   const lastMoveTs = useRef<number>(Date.now());
-  const lastSignificantPosition = useRef({ x: target.current.x, y: target.current.y });
   const rafRef = useRef<number | null>(null);
-  const visibleRef = useRef<boolean>(isVisible);
+  const [isMoving, setIsMoving] = useState(false);
+  const [visible, setVisible] = useState(isVisible);
+  const lastSignificantPosition = useRef({ ...target.current });
+  const flameTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
-    visibleRef.current = isVisible;
-    if (wrapperRef.current) wrapperRef.current.style.display = isVisible ? "block" : "none";
-    
-    // Apply cursor hiding to body if requested
+    setVisible(isVisible);
+  }, [isVisible]);
+
+  useEffect(() => {
     if (hideCursor) {
-      document.body.style.cursor = 'none';
+      document.body.style.cursor = "none";
     } else {
-      document.body.style.cursor = '';
+      document.body.style.cursor = "";
     }
-    
-    return () => {
-      // Cleanup: restore cursor when component unmounts
-      document.body.style.cursor = '';
-    };
-  }, [isVisible, hideCursor]);
 
-  useEffect(() => {
-    const onMouseMove = useCallback((e: MouseEvent) => {
-      // Toggle visibility if hovering excluded elements
+    return () => {
+      document.body.style.cursor = "";
+    };
+  }, [hideCursor]);
+
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
       const t = e.target as Element | null;
       const exclude = t && t.closest && t.closest(".no-rocket-cursor");
-      const show = !exclude && visibleRef.current;
-      if (wrapperRef.current) wrapperRef.current.style.display = show ? "block" : "none";
-      if (!show) return;
+      const shouldShow = !exclude && isVisible;
+      setVisible(shouldShow);
+      if (!shouldShow) return;
 
-      // Set rocket position on cursor with optional offset
-      target.current.x = e.clientX + offsetX;
-      target.current.y = e.clientY + offsetY;
-
+      target.current.x = e.clientX;
+      target.current.y = e.clientY;
       lastMoveTs.current = Date.now();
 
-      // Update angle based on movement direction from previous position
-      const moveDx = target.current.x - lastSignificantPosition.current.x;
-      const moveDy = target.current.y - lastSignificantPosition.current.y;
-      const moveDist = Math.hypot(moveDx, moveDy);
-      if (moveDist > threshold) {
-        startTransition(() => {
-          angleRef.current = Math.atan2(moveDy, moveDx) * (180 / Math.PI) + 45;
-          lastSignificantPosition.current = { x: target.current.x, y: target.current.y };
-        });
-      }
-    }, [offsetX, offsetY, threshold]);
+      const dx = target.current.x - lastSignificantPosition.current.x;
+      const dy = target.current.y - lastSignificantPosition.current.y;
+      const distance = Math.hypot(dx, dy);
 
-    const onMouseOut = useCallback((e: MouseEvent) => {
-      const rel = e.relatedTarget as Element | null;
-      if (!rel || rel.nodeName === "HTML") {
-        if (wrapperRef.current) wrapperRef.current.style.display = "none";
+      if (distance > threshold) {
+        angleRef.current = Math.atan2(dy, dx) * (180 / Math.PI) + 45;
+        lastSignificantPosition.current = {
+          x: target.current.x,
+          y: target.current.y,
+        };
       }
-    }, []);
 
-    window.addEventListener("mousemove", onMouseMove, { passive: true });
-    document.addEventListener("mouseout", onMouseOut);
+      setIsMoving(true);
+      if (flameTimeoutRef.current) {
+        window.clearTimeout(flameTimeoutRef.current);
+      }
+      flameTimeoutRef.current = window.setTimeout(
+        () => setIsMoving(false),
+        flameHideTimeout
+      );
+    },
+    [threshold, flameHideTimeout, isVisible]
+  );
+
+  const handleMouseOut = useCallback((e: MouseEvent) => {
+    const rel = e.relatedTarget as Element | null;
+    if (!rel || rel.nodeName === "HTML") {
+      setVisible(false);
+      setIsMoving(false);
+    }
+  }, []);
+
+  const handleVisibilityChange = useCallback(() => {
+    if (document.visibilityState === "visible") {
+      setVisible(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+    document.addEventListener("mouseout", handleMouseOut);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     const step = () => {
-      // Move rocket directly to cursor position (no easing)
-      current.current.x = target.current.x;
-      current.current.y = target.current.y;
-      
-      // Show flame based on recent mouse movement
+      const lerp = Math.min(Math.max(followSpeed, 0), 1);
+      const dx = target.current.x - current.current.x;
+      const dy = target.current.y - current.current.y;
+      const distanceToTarget = Math.hypot(dx, dy);
+
+      // Snap to cursor when we are very close to avoid asymptotic lag/overshoot feeling
+      if (distanceToTarget < 0.5) {
+        current.current.x = target.current.x;
+        current.current.y = target.current.y;
+      } else {
+        current.current.x += dx * lerp;
+        current.current.y += dy * lerp;
+      }
+
       const showFlame = Date.now() - lastMoveTs.current < flameHideTimeout;
 
       const el = wrapperRef.current;
       if (el) {
-        el.style.transform = `translate3d(${current.current.x}px, ${current.current.y}px, 0)`;
-        
-        // Rotation is now in SVG element  
-        const svg = el.querySelector('svg');
+        // Shift rocket so the nose (not the center) meets the cursor
+        const dirRad = (angleRef.current - 45) * (Math.PI / 180); // remove the art's 45° offset
+        const noseOffset = size * 0.35; // distance from center to nose, scaled with size
+        const noseX = Math.cos(dirRad) * noseOffset;
+        const noseY = Math.sin(dirRad) * noseOffset;
+
+        el.style.transform = `translate3d(${current.current.x - noseX}px, ${
+          current.current.y - noseY
+        }px, 0) translate(-50%, -50%)`;
+        const svg = el.querySelector("svg");
         if (svg) {
-          svg.style.transform = `translate(-50%, -50%) rotate(${angleRef.current}deg)`;
+          svg.style.transform = `rotate(${angleRef.current}deg)`;
         }
       }
+
       if (flameRef.current) {
-        flameRef.current.style.opacity = showFlame ? "1" : "0";
+        flameRef.current.style.opacity = showFlame && isMoving ? "1" : "0";
       }
+
       rafRef.current = requestAnimationFrame(step);
     };
     rafRef.current = requestAnimationFrame(step);
 
     return () => {
-      window.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseout", onMouseOut);
+      window.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseout", handleMouseOut);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      if (flameTimeoutRef.current) {
+        window.clearTimeout(flameTimeoutRef.current);
+      }
     };
-  }, [flameHideTimeout, threshold, offsetX, offsetY]);
+  }, [handleMouseMove, handleMouseOut, handleVisibilityChange]);
 
-  const wrapperStyle = useMemo(() => ({
-    position: "fixed" as const,
-    left: 0,
-    top: 0,
-    pointerEvents: "none" as const,
-    zIndex: 9999,
-    width: `${size}px`,
-    height: `${size * 1.5}px`,
-    willChange: "transform",
-  }), [size]);
+  const wrapperStyle = useMemo(
+    () => ({
+      position: "fixed" as const,
+      left: 0,
+      top: 0,
+      pointerEvents: "none" as const,
+      zIndex: 9999,
+      width: `${size}px`,
+      height: `${size * 1.5}px`,
+      willChange: "transform",
+      display: visible ? "block" : "none",
+    }),
+    [size, visible]
+  );
 
-  const svgStyle = useMemo(() => ({ 
-    width: "100%", 
-    height: "100%", 
-    display: "block",
-  }), []);
+  const svgStyle = useMemo(
+    () => ({
+      width: "100%",
+      height: "100%",
+      display: "block",
+    }),
+    []
+  );
+
+  if (!visible) {
+    return null;
+  }
 
   return (
     <div ref={wrapperRef} style={wrapperStyle}>
