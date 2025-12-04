@@ -87,6 +87,9 @@ Here's a demo of the Rocket Cursor in action:
 - **Changed**: Rocket aligns by its nose to the cursor position (manual offsets removed)
 - **Changed**: Demo cleaned up to match the new API (no offset sliders)
 
+### 2.1.1
+- **Fixed**: Flame visibility now updates reliably
+
 ### 2.0.0 (React 19+ Only)
 - **BREAKING**: Now requires React 19.0.0 or higher
 - **NEW**: Added `useId()` for unique SVG gradient IDs (prevents collisions)

@@ -111,6 +111,7 @@ const RocketCursor: React.FC<Props> = ({
   const lastMoveTs = useRef<number>(Date.now());
   const rafRef = useRef<number | null>(null);
   const [isMoving, setIsMoving] = useState(false);
+  const isMovingRef = useRef(false);
   const [visible, setVisible] = useState(isVisible);
   const lastSignificantPosition = useRef({ ...target.current });
   const flameTimeoutRef = useRef<number | null>(null);
@@ -156,11 +157,15 @@ const RocketCursor: React.FC<Props> = ({
       }
 
       setIsMoving(true);
+      isMovingRef.current = true;
       if (flameTimeoutRef.current) {
         window.clearTimeout(flameTimeoutRef.current);
       }
       flameTimeoutRef.current = window.setTimeout(
-        () => setIsMoving(false),
+        () => {
+          setIsMoving(false);
+          isMovingRef.current = false;
+        },
         flameHideTimeout
       );
     },
@@ -172,6 +177,7 @@ const RocketCursor: React.FC<Props> = ({
     if (!rel || rel.nodeName === "HTML") {
       setVisible(false);
       setIsMoving(false);
+      isMovingRef.current = false;
     }
   }, []);
 
@@ -221,7 +227,8 @@ const RocketCursor: React.FC<Props> = ({
       }
 
       if (flameRef.current) {
-        flameRef.current.style.opacity = showFlame && isMoving ? "1" : "0";
+        flameRef.current.style.opacity =
+          showFlame && isMovingRef.current ? "1" : "0";
       }
 
       rafRef.current = requestAnimationFrame(step);
