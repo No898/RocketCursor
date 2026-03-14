@@ -2,13 +2,34 @@
   "name": "rocket-cursor-component",
   "version": "2.1.1",
   "description": "A customizable React component that replaces the cursor with an animated rocket, featuring rotation and flame effects.",
-  "main": "dist/rocket.Cursor.js",
-  "types": "dist/rocket.Cursor.d.ts",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "sideEffects": false,
   "scripts": {
-    "build": "tsc",
-    "prepublishOnly": "npm run build",
+    "build": "tsup",
+    "check": "npm run typecheck && npm run test && npm run build && publint && attw --pack .",
+    "check:published": "node ./scripts/check-published-version.mjs",
     "dev": "vite",
-    "demo": "vite"
+    "demo": "vite",
+    "prepublishOnly": "npm run typecheck && npm run test && npm run build && publint",
+    "prepare": "simple-git-hooks",
+    "test": "vitest run",
+    "test:package": "node ./scripts/smoke-pack.mjs",
+    "typecheck": "tsc --noEmit"
   },
   "files": [
     "dist",
@@ -30,20 +51,34 @@
   "author": "Tomas Dinh",
   "license": "MIT",
   "peerDependencies": {
-    "react": ">=19.0.0",
-    "react-dom": ">=19.0.0"
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
   },
   "devDependencies": {
-    "@types/node": "^24.10.1",
-    "@types/react": "^19.2.7",
+    "@arethetypeswrong/cli": "^0.18.2",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/node": "^24.12.0",
+    "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^5.1.1",
-    "react": "^19.2.1",
-    "react-dom": "^19.2.1",
+    "@vitejs/plugin-react": "^5.2.0",
+    "jsdom": "^28.1.0",
+    "publint": "^0.3.18",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "simple-git-hooks": "^2.13.1",
+    "tsup": "^8.5.1",
     "typescript": "^5.9.3",
-    "vite": "^7.2.6"
+    "vite": "^7.3.1",
+    "vitest": "^4.1.0"
+  },
+  "overrides": {
+    "rollup": "4.59.0"
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=18.0.0"
+  },
+  "simple-git-hooks": {
+    "pre-push": "node ./scripts/pre-push.mjs"
   }
 }

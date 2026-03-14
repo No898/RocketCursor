@@ -1,10 +1,14 @@
 # Rocket Cursor Component
 
-A customizable React 19+ component that replaces the mouse cursor with an animated rocket that rotates based on movement and displays a flame effect when in motion.
+`rocket-cursor-component` is a React cursor library with two layers:
+
+- `RocketCursor`: the built-in animated rocket.
+- `CursorFollower`: the generic motion engine for your own SVG, HTML, or CSS cursor.
+
+If you only want the packaged rocket, use the default export.
+If you want to build your own cursor, you do not need to fork this library. Use `CursorFollower` and render your own component inside it.
 
 ## Installation
-
-Install the package via npm:
 
 ```bash
 npm install rocket-cursor-component
@@ -12,119 +16,353 @@ npm install rocket-cursor-component
 
 ## Requirements
 
-- **React >= 19.0.0** (Required)
-- **React DOM >= 19.0.0** (Required)  
-- Node.js >= 16.0.0
+- React 18 or React 19
+- React DOM 18 or React DOM 19
+- Node.js 20.19+ or 22.12+ for local development in this repository
 
-> This package is built specifically for React 19+ and uses the latest React features including `useId()` for better performance and collision prevention.
+> The published package already ships ESM, CommonJS, and type definitions.
 
-## Usage
+## Quick Start
 
-Here's an example of how to use the `RocketCursor` component in your React app:
+### Use the built-in rocket
 
 ```tsx
-import React from "react";
 import RocketCursor from "rocket-cursor-component";
 
-function App() {
+export default function App() {
   return (
-    <div>
-      <h1>Your app content here</h1>
-      {/* Basic usage - rocket replaces cursor */}
+    <>
       <RocketCursor />
+      <main>Your app content</main>
+    </>
+  );
+}
+```
 
-      {/* Tuned usage - visible system cursor, snappier follow */}
-      <RocketCursor
-        size={60}
-        threshold={12}
-        flameHideTimeout={250}
-        hideCursor={false}   // keep native cursor visible
-        followSpeed={0.35}   // 0-1, higher = snappier
+### Tune the rocket
+
+```tsx
+import RocketCursor from "rocket-cursor-component";
+
+export default function App() {
+  return (
+    <RocketCursor
+      size={60}
+      threshold={12}
+      flameHideTimeout={250}
+      followSpeed={0.35}
+      hideCursor={false}
+      excludeSelector=".no-rocket-cursor, [data-hide-rocket]"
+      zIndex={1200}
+    />
+  );
+}
+```
+
+## Build Your Own Cursor
+
+Use `CursorFollower` when you want custom visuals and keep the same motion system.
+
+```tsx
+import { CursorFollower } from "rocket-cursor-component";
+
+function StarCursor({ isMoving }: { isMoving: boolean }) {
+  return (
+    <svg viewBox="0 0 220 180" width="100%" height="100%" aria-hidden="true">
+      <defs>
+        <radialGradient id="star-glow" cx="50%" cy="50%" r="70%">
+          <stop offset="0" stopColor="#fff7d6" stopOpacity="0.92" />
+          <stop offset="0.55" stopColor="#7ee2ff" stopOpacity="0.32" />
+          <stop offset="1" stopColor="#7ee2ff" stopOpacity="0" />
+        </radialGradient>
+        <linearGradient id="star-fill" x1="62" y1="36" x2="154" y2="142" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#fffdf3" />
+          <stop offset="0.46" stopColor="#ffd874" />
+          <stop offset="1" stopColor="#ff9e47" />
+        </linearGradient>
+      </defs>
+
+      <g
+        style={{
+          opacity: isMoving ? 1 : 0.28,
+          transform: `scaleX(${isMoving ? 1 : 0.84})`,
+          transformOrigin: "88px 90px",
+          transition: "opacity 140ms ease, transform 140ms ease",
+        }}
+      >
+        <path
+          d="M8 90C18 77 33 70 58 72L82 78L82 102L58 108C33 110 18 103 8 90Z"
+          fill="rgba(146, 234, 255, 0.2)"
+        />
+      </g>
+
+      <circle cx="102" cy="90" r="58" fill="url(#star-glow)" />
+      <path
+        d="M102 31L117 65L155 69L127 92L134 129L102 110L70 129L77 92L49 69L87 65Z"
+        fill="url(#star-fill)"
+        stroke="#fff7de"
+        strokeLinejoin="round"
+        strokeWidth="3"
       />
-    </div>
+    </svg>
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <CursorFollower
+      width={96}
+      height={78}
+      anchorOffset={{ x: 26, y: 0 }}
+      followSpeed={0.22}
+      movingTimeout={260}
+      threshold={10}
+    >
+      {({ isMoving }) => <StarCursor isMoving={isMoving} />}
+    </CursorFollower>
+  );
+}
 ```
 
-### Props
+## How To Add Another SVG Cursor
 
-| Prop               | Type    | Default | Description                                                |
-| ------------------ | ------- | ------- | ---------------------------------------------------------- |
-| `size`             | number  | `50`    | The size of the rocket cursor in pixels.                   |
-| `threshold`        | number  | `10`    | Minimum distance (pixels) to move before the rocket rotates. |
-| `isVisible`        | boolean | `true`  | Initial visibility state of the rocket cursor.             |
-| `flameHideTimeout` | number  | `300`   | Time in milliseconds before the flame hides after stopping.|
-| `hideCursor`       | boolean | `false` | Whether to hide the normal cursor (true) or show both.     |
-| `followSpeed`      | number  | `0.18`  | Follow smoothing (0-1). Higher = faster/snappier following. |
+This is the intended extension path for users of the package.
 
-## Features
+### 1. Create a React component that renders your SVG
 
-- **React 19+ Optimized**: Built specifically for React 19+ with latest performance optimizations
-- **Dual Cursor Mode**: Choose to replace cursor completely or show rocket alongside normal cursor
-- **Custom Cursor**: Replaces the default mouse cursor with a rocket that follows the cursor and aligns its nose to the pointer
-- **Smart Rotation**: The rocket rotates in the direction of cursor movement with configurable threshold
-- **Flame Effect**: Dynamic flame animation when the cursor is moving
-- **Collision-Free**: Uses React 19's `useId()` to prevent SVG gradient ID collisions
-- **Customizable**: Easily adjust size, rotation threshold, visibility, positioning, and flame duration
-- **Element-Specific Visibility**: Automatically hides the rocket cursor over elements with the class `no-rocket-cursor`
-- **Performance Optimized**: Uses `requestAnimationFrame` and hardware acceleration for smooth animations
-- **TypeScript**: Full TypeScript support with proper type definitions
+Your component can be as simple or as detailed as you want.
+If you use gradients, filters, masks, or clip paths, prefer `useId()` so multiple cursors do not collide.
+
+```tsx
+import { useId } from "react";
+
+function MyShip({ isMoving }: { isMoving: boolean }) {
+  const gradientId = useId();
+
+  return (
+    <svg viewBox="0 0 120 80" width="100%" height="100%" aria-hidden="true">
+      <defs>
+        <linearGradient id={gradientId} x1="0" y1="0" x2="120" y2="80">
+          <stop offset="0" stopColor="#fff" />
+          <stop offset="1" stopColor="#8ad5ff" />
+        </linearGradient>
+      </defs>
+
+      <g style={{ opacity: isMoving ? 1 : 0.72, transition: "opacity 120ms ease" }}>
+        <path d="M15 40L60 15L105 40L60 65Z" fill={`url(#${gradientId})`} />
+      </g>
+    </svg>
+  );
+}
+```
+
+### 2. Render it inside `CursorFollower`
+
+```tsx
+import { CursorFollower } from "rocket-cursor-component";
+
+<CursorFollower width={72} height={48}>
+  {({ isMoving }) => <MyShip isMoving={isMoving} />}
+</CursorFollower>;
+```
+
+### 3. Tune the alignment
+
+The most important prop for custom SVGs is `anchorOffset`.
+
+- `anchorOffset.x`: how far the cursor anchor should move horizontally inside your artwork
+- `anchorOffset.y`: how far the cursor anchor should move vertically inside your artwork
+
+Examples:
+
+- front-pointing ship: use a positive `x`
+- centered icon like a star: use a smaller `x`, often close to half the width or less
+- artwork with a nose above the centerline: use a negative `y`
+
+```tsx
+<CursorFollower
+  width={96}
+  height={78}
+  anchorOffset={{ x: 26, y: 0 }}
+>
+  {({ isMoving }) => <MyShip isMoving={isMoving} />}
+</CursorFollower>
+```
+
+### 4. Tune rotation
+
+If your SVG points to the right by default, you usually want:
+
+```tsx
+rotateWithMovement={true}
+rotationOffset={0}
+```
+
+If your SVG points up, left, or diagonally in its default drawing direction, adjust `rotationOffset`.
+
+Examples:
+
+- points up: `rotationOffset={-90}`
+- points down: `rotationOffset={90}`
+- points diagonally: use the angle that matches your artwork
+
+### 5. Use the motion state
+
+`CursorFollower` can pass a render function and gives you:
+
+- `isMoving`: useful for flame, glow, wake, streaks, or scaling
+- `visible`: useful if you want to pause expensive effects when hidden
+
+```tsx
+<CursorFollower movingTimeout={220}>
+  {({ isMoving, visible }) => (
+    <MyShip isMoving={isMoving} data-visible={visible} />
+  )}
+</CursorFollower>
+```
+
+### 6. Add “speed” without smoke
+
+If you want motion to feel fast without using flame or smoke, the simplest patterns are:
+
+- air streaks behind the object
+- a soft glow envelope around the object
+- slight width stretch while moving
+- subtle opacity changes on secondary details
+
+That is exactly the kind of effect used in the local demo star example.
+
+## API
+
+### `RocketCursor` props
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `className` | `string` | `undefined` | Optional class passed to the wrapper. |
+| `disabled` | `boolean` | `false` | Disables the custom cursor entirely. |
+| `disableOnCoarsePointer` | `boolean` | `true` | Disables the cursor on touch/coarse pointers. |
+| `excludeSelector` | `string` | `".no-rocket-cursor"` | Selector for regions where the custom cursor should hide. |
+| `respectReducedMotion` | `boolean` | `true` | Disables the cursor when the user prefers reduced motion. |
+| `size` | `number` | `50` | Rocket size in pixels. |
+| `threshold` | `number` | `10` | Minimum movement distance before rotation updates. |
+| `isVisible` | `boolean` | `true` | Controls whether the custom cursor should render. |
+| `flameHideTimeout` | `number` | `300` | Delay before the flame hides after movement stops. |
+| `hideCursor` | `boolean` | `false` | Hides the native cursor when enabled. |
+| `followSpeed` | `number` | `0.18` | Follow smoothing from `0` to `1`. Higher is snappier. |
+| `zIndex` | `number` | `9999` | Wrapper stacking order. |
+
+### `CursorFollower` props
+
+`CursorFollower` includes the shared base props from `RocketCursor`:
+
+- `className`
+- `disabled`
+- `disableOnCoarsePointer`
+- `excludeSelector`
+- `followSpeed`
+- `hideCursor`
+- `isVisible`
+- `respectReducedMotion`
+- `threshold`
+- `zIndex`
+
+Additional props:
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `anchorOffset` | `{ x: number; y: number }` | `{ x: 0, y: 0 }` | Moves the cursor anchor inside the artwork. |
+| `children` | `ReactNode \| (state) => ReactNode` | required | Static node or render function that receives `{ isMoving, visible }`. |
+| `movingTimeout` | `number` | `300` | Delay before `isMoving` flips back to `false`. |
+| `rotateWithMovement` | `boolean` | `true` | Rotates the content to match movement direction. |
+| `rotationOffset` | `number` | `0` | Fixed angle offset for artwork with a different default direction. |
+| `width` | `number` | `48` | Wrapper width in pixels. |
+| `height` | `number` | `48` | Wrapper height in pixels. |
+| `wrapperProps` | `HTMLAttributes<HTMLDivElement>` | `undefined` | Extra wrapper attributes, including `data-*` hooks. |
+
+## Feature Summary
+
+- Built-in rocket cursor
+- Generic cursor engine for custom SVG or HTML
+- Motion-based rotation
+- Optional native cursor hiding
+- Reduced-motion and coarse-pointer safe defaults
+- Exclusion zones via CSS selector
+- TypeScript exports for both built-in and custom usage
+- ESM and CommonJS builds
+
+## Development
+
+```bash
+nvm use
+npm install
+npm run demo
+```
+
+Useful commands:
+
+```bash
+npm run typecheck
+npm run test
+npm run test:package
+npm run build
+npm run check
+npm run check:published
+```
+
+`npm install` also installs a local `pre-push` hook. When you push to `main` or `master`, the hook checks the latest npm version and blocks the push if publish-relevant files changed but `package.json` was not bumped ahead of what is already published.
 
 ## Demo
 
-Here's a demo of the Rocket Cursor in action:
+Local demo:
 
-![Rocket Cursor Demo](https://github.com/No898/RocketCursor/raw/main/assets/rocket-cursor-demo.gif)
+```bash
+npm install
+npm run demo
+```
 
-> Local demo (not published to npm): run `npm install` and `npm run dev`, then open the Vite dev server printed in the console.
+Then open the Vite URL printed in the terminal.
+
+## Release
+
+Update the package version, then either:
+
+- push a tag in the format `vX.Y.Z`
+- or trigger the release workflow manually
+
+The release workflow expects an `NPM_TOKEN` repository secret with publish access.
+
+If you want to verify the version manually before tagging, run:
+
+```bash
+npm run check:published
+```
 
 ## Changelog
 
-### 2.1.0
-- **NEW**: Added `followSpeed` prop for configurable smoothing (nose snaps to cursor when close)
-- **Changed**: Rocket aligns by its nose to the cursor position (manual offsets removed)
-- **Changed**: Demo cleaned up to match the new API (no offset sliders)
+### Unreleased
+
+- Added `CursorFollower` as a public API for custom cursors
+- Added smoke coverage for the generic API
+- Expanded the demo with custom cursor examples
+- Reworked the README around custom SVG usage
 
 ### 2.1.1
-- **Fixed**: Flame visibility now updates reliably
 
-### 2.0.0 (React 19+ Only)
-- **BREAKING**: Now requires React 19.0.0 or higher
-- **NEW**: Added `useId()` for unique SVG gradient IDs (prevents collisions)
-- **NEW**: Added `hideCursor` prop for dual cursor mode
-- **NEW**: Added `offsetX` and `offsetY` props for precise positioning
-- Fixed all TypeScript type issues and removed unnecessary type casting
-- Improved performance with better dependency management
-- Removed unused props (`followDistance`, `followSpeed`)
-- Added SSR safety checks for `window` object
-- Enhanced code structure with React 19 best practices
+- Fixed flame visibility updates
 
-### 1.1.1
-- Fixed a typo in README.md.
+### 2.1.0
 
-### 1.1.0 
-- Refactored SVG into separate components.
-- Added `flameHideTimeout` prop for configurable flame duration.
-- Improved code structure and efficiency.
+- Added `followSpeed`
+- Changed rocket alignment to use the nose position
+- Updated the demo to match the new API
 
-### 1.0.9
+### 2.0.0
 
-- Added support to hide the Rocket Cursor on elements with the class `no-rocket-cursor`.
-
-### 1.0.2
-
-- Added demo GIF in the README file.
-
-### 1.0.1
-
-- Initial release of the Rocket Cursor component.
-
-## Author
-
-[No898](https://github.com/No898)
+- Added `useId()` for SVG gradient safety
+- Added `hideCursor`
+- Improved SSR safety
+- Cleaned up types and removed dead props
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
+MIT. See [LICENSE](./LICENSE).

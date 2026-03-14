@@ -1,19 +1,9 @@
-import React, {
-  useEffect,
-  useRef,
-  useId,
-  useMemo,
-  useCallback,
-  useState,
-} from "react";
+import { useId } from "react";
+import CursorFollower, { type CursorFollowerBaseProps } from "./cursorFollower";
 
-type Props = {
-  size?: number;
-  threshold?: number;
+export type RocketCursorProps = CursorFollowerBaseProps & {
   flameHideTimeout?: number;
-  isVisible?: boolean;
-  hideCursor?: boolean;
-  followSpeed?: number; // 0-1, higher = faster reaction (keeps the older snappy feel)
+  size?: number;
 };
 
 // SVG components for flame and rocket visuals
@@ -91,202 +81,62 @@ const RocketSvg = () => (
   </g>
 );
 
-const RocketCursor: React.FC<Props> = ({
-  size = 50,
-  threshold = 10,
+const RocketCursor = ({
+  className,
+  disabled = false,
+  disableOnCoarsePointer = true,
+  excludeSelector = ".no-rocket-cursor",
+  respectReducedMotion = true,
   flameHideTimeout = 300,
+  size = 50,
   isVisible = true,
   hideCursor = false,
-  followSpeed = 0.18, // default smoothing similar to původní chování
-}) => {
+  followSpeed = 0.18,
+  threshold = 10,
+  zIndex = 9999,
+}: RocketCursorProps) => {
   const gradientId = useId();
-  const wrapperRef = useRef<HTMLDivElement | null>(null);
-  const flameRef = useRef<SVGGElement | null>(null);
-  const target = useRef({
-    x: typeof window !== "undefined" ? window.innerWidth / 2 : 0,
-    y: typeof window !== "undefined" ? window.innerHeight / 2 : 0,
-  });
-  const current = useRef({ ...target.current });
-  const angleRef = useRef(0);
-  const lastMoveTs = useRef<number>(Date.now());
-  const rafRef = useRef<number | null>(null);
-  const [isMoving, setIsMoving] = useState(false);
-  const isMovingRef = useRef(false);
-  const [visible, setVisible] = useState(isVisible);
-  const lastSignificantPosition = useRef({ ...target.current });
-  const flameTimeoutRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    setVisible(isVisible);
-  }, [isVisible]);
-
-  useEffect(() => {
-    if (hideCursor) {
-      document.body.style.cursor = "none";
-    } else {
-      document.body.style.cursor = "";
-    }
-
-    return () => {
-      document.body.style.cursor = "";
-    };
-  }, [hideCursor]);
-
-  const handleMouseMove = useCallback(
-    (e: MouseEvent) => {
-      const t = e.target as Element | null;
-      const exclude = t && t.closest && t.closest(".no-rocket-cursor");
-      const shouldShow = !exclude && isVisible;
-      setVisible(shouldShow);
-      if (!shouldShow) return;
-
-      target.current.x = e.clientX;
-      target.current.y = e.clientY;
-      lastMoveTs.current = Date.now();
-
-      const dx = target.current.x - lastSignificantPosition.current.x;
-      const dy = target.current.y - lastSignificantPosition.current.y;
-      const distance = Math.hypot(dx, dy);
-
-      if (distance > threshold) {
-        angleRef.current = Math.atan2(dy, dx) * (180 / Math.PI) + 45;
-        lastSignificantPosition.current = {
-          x: target.current.x,
-          y: target.current.y,
-        };
-      }
-
-      setIsMoving(true);
-      isMovingRef.current = true;
-      if (flameTimeoutRef.current) {
-        window.clearTimeout(flameTimeoutRef.current);
-      }
-      flameTimeoutRef.current = window.setTimeout(
-        () => {
-          setIsMoving(false);
-          isMovingRef.current = false;
-        },
-        flameHideTimeout
-      );
-    },
-    [threshold, flameHideTimeout, isVisible]
-  );
-
-  const handleMouseOut = useCallback((e: MouseEvent) => {
-    const rel = e.relatedTarget as Element | null;
-    if (!rel || rel.nodeName === "HTML") {
-      setVisible(false);
-      setIsMoving(false);
-      isMovingRef.current = false;
-    }
-  }, []);
-
-  const handleVisibilityChange = useCallback(() => {
-    if (document.visibilityState === "visible") {
-      setVisible(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    window.addEventListener("mousemove", handleMouseMove, { passive: true });
-    document.addEventListener("mouseout", handleMouseOut);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-
-    const step = () => {
-      const lerp = Math.min(Math.max(followSpeed, 0), 1);
-      const dx = target.current.x - current.current.x;
-      const dy = target.current.y - current.current.y;
-      const distanceToTarget = Math.hypot(dx, dy);
-
-      // Snap to cursor when we are very close to avoid asymptotic lag/overshoot feeling
-      if (distanceToTarget < 0.5) {
-        current.current.x = target.current.x;
-        current.current.y = target.current.y;
-      } else {
-        current.current.x += dx * lerp;
-        current.current.y += dy * lerp;
-      }
-
-      const showFlame = Date.now() - lastMoveTs.current < flameHideTimeout;
-
-      const el = wrapperRef.current;
-      if (el) {
-        // Shift rocket so the nose (not the center) meets the cursor
-        const dirRad = (angleRef.current - 45) * (Math.PI / 180); // remove the art's 45° offset
-        const noseOffset = size * 0.35; // distance from center to nose, scaled with size
-        const noseX = Math.cos(dirRad) * noseOffset;
-        const noseY = Math.sin(dirRad) * noseOffset;
-
-        el.style.transform = `translate3d(${current.current.x - noseX}px, ${
-          current.current.y - noseY
-        }px, 0) translate(-50%, -50%)`;
-        const svg = el.querySelector("svg");
-        if (svg) {
-          svg.style.transform = `rotate(${angleRef.current}deg)`;
-        }
-      }
-
-      if (flameRef.current) {
-        flameRef.current.style.opacity =
-          showFlame && isMovingRef.current ? "1" : "0";
-      }
-
-      rafRef.current = requestAnimationFrame(step);
-    };
-    rafRef.current = requestAnimationFrame(step);
-
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseout", handleMouseOut);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      if (flameTimeoutRef.current) {
-        window.clearTimeout(flameTimeoutRef.current);
-      }
-    };
-  }, [handleMouseMove, handleMouseOut, handleVisibilityChange]);
-
-  const wrapperStyle = useMemo(
-    () => ({
-      position: "fixed" as const,
-      left: 0,
-      top: 0,
-      pointerEvents: "none" as const,
-      zIndex: 9999,
-      width: `${size}px`,
-      height: `${size * 1.5}px`,
-      willChange: "transform",
-      display: visible ? "block" : "none",
-    }),
-    [size, visible]
-  );
-
-  const svgStyle = useMemo(
-    () => ({
-      width: "100%",
-      height: "100%",
-      display: "block",
-    }),
-    []
-  );
-
-  if (!visible) {
-    return null;
-  }
+  const svgStyle = {
+    display: "block",
+    height: "100%",
+    width: "100%",
+  };
 
   return (
-    <div ref={wrapperRef} style={wrapperStyle}>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 416.449 516.449"
-        style={svgStyle}
-      >
-        <g ref={flameRef}>
-          <FlameSvg gradientId={gradientId} />
-        </g>
-        <RocketSvg />
-      </svg>
-    </div>
+    <CursorFollower
+      anchorOffset={{
+        x: (size * 0.35) / Math.SQRT2,
+        y: (-size * 0.35) / Math.SQRT2,
+      }}
+      className={className}
+      disabled={disabled}
+      disableOnCoarsePointer={disableOnCoarsePointer}
+      excludeSelector={excludeSelector}
+      followSpeed={followSpeed}
+      height={size * 1.5}
+      hideCursor={hideCursor}
+      isVisible={isVisible}
+      movingTimeout={flameHideTimeout}
+      respectReducedMotion={respectReducedMotion}
+      rotationOffset={45}
+      threshold={threshold}
+      width={size}
+      wrapperProps={{ "data-rocket-cursor": "" }}
+      zIndex={zIndex}
+    >
+      {({ isMoving }) => (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 416.449 516.449"
+          style={svgStyle}
+        >
+          <g style={{ opacity: isMoving ? 1 : 0, transition: "opacity 0.1s" }}>
+            <FlameSvg gradientId={gradientId} />
+          </g>
+          <RocketSvg />
+        </svg>
+      )}
+    </CursorFollower>
   );
 };
 
