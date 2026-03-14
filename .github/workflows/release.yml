@@ -2,8 +2,9 @@ name: Release
 
 on:
   push:
-    tags:
-      - "v*.*.*"
+    branches:
+      - main
+      - master
   workflow_dispatch:
 
 jobs:
@@ -32,21 +33,28 @@ jobs:
             exit 1
           fi
 
-      - name: Verify tag matches package version
-        if: startsWith(github.ref, 'refs/tags/')
-        run: |
-          node -e "const pkg=require('./package.json'); const tag=process.env.GITHUB_REF_NAME; if (tag !== `v${pkg.version}`) { throw new Error(`Tag ${tag} does not match package.json version v${pkg.version}`); }"
+      - name: Determine release state
+        id: release_state
+        run: node ./scripts/release-state.mjs
+
+      - name: Skip publish when npm is already up to date
+        if: steps.release_state.outputs.should_publish != 'true'
+        run: echo '${{ fromJSON(steps.release_state.outputs.reason) }}'
 
       - name: Install dependencies
+        if: steps.release_state.outputs.should_publish == 'true'
         run: npm ci
 
       - name: Run quality checks
+        if: steps.release_state.outputs.should_publish == 'true'
         run: npm run check
 
       - name: Run package smoke test
+        if: steps.release_state.outputs.should_publish == 'true'
         run: npm run test:package
 
       - name: Publish to npm
+        if: steps.release_state.outputs.should_publish == 'true'
         run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

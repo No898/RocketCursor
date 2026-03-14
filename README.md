@@ -306,6 +306,8 @@ npm run test
 npm run test:package
 npm run build
 npm run check
+npm run version:status
+npm run version:check
 npm run check:published
 ```
 
@@ -324,17 +326,31 @@ Then open the Vite URL printed in the terminal.
 
 ## Release
 
-Update the package version, then either:
+Update the package version, then merge the change into `main` or `master`.
 
-- push a tag in the format `vX.Y.Z`
-- or trigger the release workflow manually
+The release workflow runs only on pushes to `main` and `master`, plus manual dispatches from those branches. It publishes only when `package.json` is ahead of the current npm version, so routine merges without a version bump are skipped cleanly.
+
+Recommended flow:
+
+- run `npm run version:patch`, `npm run version:minor`, or `npm run version:major`
+- commit the version bump
+- merge the branch into `main` or `master`
+- let GitHub Actions publish automatically, or trigger the release workflow manually from `main`/`master`
 
 The release workflow expects an `NPM_TOKEN` repository secret with publish access.
 
 If you want to verify the version manually before tagging, run:
 
 ```bash
+npm run version:status
+npm run version:check
 npm run check:published
+```
+
+For a dry run without changing `package.json`, you can preview the next version:
+
+```bash
+node ./scripts/bump-version.mjs patch --dry-run
 ```
 
 ## Changelog

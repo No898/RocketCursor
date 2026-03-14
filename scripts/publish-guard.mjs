@@ -109,6 +109,96 @@ export const compareVersions = (left, right) => {
   return 0;
 };
 
+export const formatVersion = ({ major, minor, patch, prerelease = [] }) => {
+  const stableVersion = `${major}.${minor}.${patch}`;
+
+  if (prerelease.length === 0) {
+    return stableVersion;
+  }
+
+  return `${stableVersion}-${prerelease.join(".")}`;
+};
+
+const getNextPrerelease = (parts, fallbackLabel) => {
+  if (parts.length === 0) {
+    return [fallbackLabel, "0"];
+  }
+
+  const nextParts = [...parts];
+
+  for (let index = nextParts.length - 1; index >= 0; index -= 1) {
+    if (/^\d+$/.test(nextParts[index])) {
+      nextParts[index] = String(Number(nextParts[index]) + 1);
+      return nextParts;
+    }
+  }
+
+  nextParts.push("0");
+  return nextParts;
+};
+
+export const incrementVersion = (value, releaseType, prereleaseLabel = "rc") => {
+  const parsedVersion = parseVersion(value);
+
+  if (!parsedVersion) {
+    throw new Error(`Unsupported version increment: "${value}".`);
+  }
+
+  switch (releaseType) {
+    case "major":
+      return formatVersion({
+        major: parsedVersion.major + 1,
+        minor: 0,
+        patch: 0,
+      });
+    case "minor":
+      return formatVersion({
+        major: parsedVersion.major,
+        minor: parsedVersion.minor + 1,
+        patch: 0,
+      });
+    case "patch":
+      return formatVersion({
+        major: parsedVersion.major,
+        minor: parsedVersion.minor,
+        patch: parsedVersion.patch + 1,
+      });
+    case "premajor":
+      return formatVersion({
+        major: parsedVersion.major + 1,
+        minor: 0,
+        patch: 0,
+        prerelease: [prereleaseLabel, "0"],
+      });
+    case "preminor":
+      return formatVersion({
+        major: parsedVersion.major,
+        minor: parsedVersion.minor + 1,
+        patch: 0,
+        prerelease: [prereleaseLabel, "0"],
+      });
+    case "prepatch":
+      return formatVersion({
+        major: parsedVersion.major,
+        minor: parsedVersion.minor,
+        patch: parsedVersion.patch + 1,
+        prerelease: [prereleaseLabel, "0"],
+      });
+    case "prerelease":
+      return formatVersion({
+        major: parsedVersion.major,
+        minor: parsedVersion.minor,
+        patch:
+          parsedVersion.prerelease.length === 0
+            ? parsedVersion.patch + 1
+            : parsedVersion.patch,
+        prerelease: getNextPrerelease(parsedVersion.prerelease, prereleaseLabel),
+      });
+    default:
+      throw new Error(`Unsupported release type "${releaseType}".`);
+  }
+};
+
 export const parsePrePushLines = (input) =>
   input
     .split(/\r?\n/)

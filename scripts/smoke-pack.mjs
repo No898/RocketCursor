@@ -16,10 +16,14 @@ await mkdir(consumerDir);
 
 try {
   const packResult = JSON.parse(
-    execFileSync("npm", ["pack", "--json", "--pack-destination", tarballDir], {
-      cwd: repoRoot,
-      encoding: "utf8",
-    })
+    execFileSync(
+      "npm",
+      ["pack", "--json", "--ignore-scripts", "--pack-destination", tarballDir],
+      {
+        cwd: repoRoot,
+        encoding: "utf8",
+      }
+    )
   );
   const tarballPath = path.join(tarballDir, packResult[0].filename);
   const reactVersion = rootPackageJson.devDependencies.react;

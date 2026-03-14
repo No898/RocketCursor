@@ -1,6 +1,6 @@
 {
   "name": "rocket-cursor-component",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "A customizable React component that replaces the cursor with an animated rocket, featuring rotation and flame effects.",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -22,14 +22,20 @@
   "scripts": {
     "build": "tsup",
     "check": "npm run typecheck && npm run test && npm run build && publint && attw --pack .",
-    "check:published": "node ./scripts/check-published-version.mjs",
+    "check:published": "node ./scripts/version-status.mjs --require-ahead --published-only",
     "dev": "vite",
     "demo": "vite",
     "prepublishOnly": "npm run typecheck && npm run test && npm run build && publint",
     "prepare": "simple-git-hooks",
     "test": "vitest run",
     "test:package": "node ./scripts/smoke-pack.mjs",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "version:check": "node ./scripts/version-status.mjs --require-ahead",
+    "version:major": "node ./scripts/bump-version.mjs major",
+    "version:minor": "node ./scripts/bump-version.mjs minor",
+    "version:patch": "node ./scripts/bump-version.mjs patch",
+    "version:prerelease": "node ./scripts/bump-version.mjs prerelease --preid rc",
+    "version:status": "node ./scripts/version-status.mjs"
   },
   "files": [
     "dist",
