@@ -1,6 +1,6 @@
 {
   "name": "rocket-cursor-component",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "A customizable React component that replaces the cursor with an animated rocket, featuring rotation and flame effects.",
   "type": "module",
   "main": "./dist/index.cjs",
