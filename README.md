@@ -359,10 +359,9 @@ node ./scripts/bump-version.mjs patch --dry-run
 
 ### Unreleased
 
-- Merged validation and publish into a single GitHub Actions workflow
-- Made package smoke parsing tolerant to lifecycle logs in CI
+- No unreleased changes yet.
 
-### 2.1.2
+### 2.2.0
 
 - Added `CursorFollower` as a public API for custom cursors
 - Added custom cursor docs, examples, and the local demo star variant
@@ -370,6 +369,9 @@ node ./scripts/bump-version.mjs patch --dry-run
 - Added release guards and version helper scripts for npm publishing
 - Improved runtime controls for reduced motion, coarse pointers, visibility, and custom cursor options
 - Modernized the package build, exports, and published type output
+- Merged validation and publish into a single GitHub Actions workflow
+- Made package smoke parsing tolerant to lifecycle logs in CI
+- Added the demo GIF and refreshed the release notes in the README
 
 ### 2.1.1
 
