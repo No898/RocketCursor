@@ -1,6 +1,6 @@
 # Rocket Cursor Component
 
-A customizable React 19+ component that replaces the mouse cursor with an animated rocket that rotates based on movement and displays a flame effect when in motion.
+A customizable React component that replaces the mouse cursor with an animated rocket that rotates based on movement and displays a flame effect when in motion.
 
 ## Installation
 
@@ -12,11 +12,11 @@ npm install rocket-cursor-component
 
 ## Requirements
 
-- **React >= 19.0.0** (Required)
-- **React DOM >= 19.0.0** (Required)  
-- Node.js >= 16.0.0
+- **React 18+** or **React 19+**
+- **React DOM 18+** or **React DOM 19+**
+- Node.js 20.19+ or 22.12+ for local development in this repository
 
-> This package is built specifically for React 19+ and uses the latest React features including `useId()` for better performance and collision prevention.
+> The published package ships prebuilt ESM and CommonJS entry points, so consumers only need a compatible React app toolchain.
 
 ## Usage
 
@@ -61,16 +61,31 @@ export default App;
 
 ## Features
 
-- **React 19+ Optimized**: Built specifically for React 19+ with latest performance optimizations
+- **React 18+ Compatible**: Works with modern React 18 and React 19 applications
 - **Dual Cursor Mode**: Choose to replace cursor completely or show rocket alongside normal cursor
 - **Custom Cursor**: Replaces the default mouse cursor with a rocket that follows the cursor and aligns its nose to the pointer
 - **Smart Rotation**: The rocket rotates in the direction of cursor movement with configurable threshold
 - **Flame Effect**: Dynamic flame animation when the cursor is moving
-- **Collision-Free**: Uses React 19's `useId()` to prevent SVG gradient ID collisions
+- **Collision-Free**: Uses React's `useId()` to prevent SVG gradient ID collisions
 - **Customizable**: Easily adjust size, rotation threshold, visibility, positioning, and flame duration
 - **Element-Specific Visibility**: Automatically hides the rocket cursor over elements with the class `no-rocket-cursor`
 - **Performance Optimized**: Uses `requestAnimationFrame` and hardware acceleration for smooth animations
 - **TypeScript**: Full TypeScript support with proper type definitions
+
+## Development
+
+```bash
+npm install
+npm run demo
+```
+
+Useful maintenance commands:
+
+```bash
+npm run typecheck
+npm run build
+npm run check
+```
 
 ## Demo
 
@@ -78,7 +93,7 @@ Here's a demo of the Rocket Cursor in action:
 
 ![Rocket Cursor Demo](https://github.com/No898/RocketCursor/raw/main/assets/rocket-cursor-demo.gif)
 
-> Local demo (not published to npm): run `npm install` and `npm run dev`, then open the Vite dev server printed in the console.
+> Local demo (not published to npm): run `npm install` and `npm run demo`, then open the Vite dev server printed in the console.
 
 ## Changelog
 

@@ -1,15 +1,18 @@
 {
   "compilerOptions": {
-    "target": "ES6",                        // Target ES6 or later for modern JavaScript compatibility
-    "module": "ES6",                        // Use ES6 modules
-    "jsx": "react",                         // Allow JSX in .tsx files
-    "declaration": true,                    // Generate .d.ts files for TypeScript consumers
-    "outDir": "./dist",                     // Output directory for compiled files
-    "strict": true,                         // Enable strict type checking
-    "moduleResolution": "node",             // Resolve modules using Node.js style
-    "esModuleInterop": true,                // Compatibility with CommonJS modules
-    "skipLibCheck": true                    // Skip type checking for libraries
+    "target": "ES2020",
+    "lib": ["DOM", "ES2020"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "isolatedModules": true,
+    "noUnusedLocals": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "types": ["node"]
   },
-  "include": ["./src"],                     // Include all files in the src directory
-  "exclude": ["node_modules", "**/*.test.tsx"]  // Exclude tests and node_modules
+  "include": ["demo", "src", "tsup.config.ts", "vite.config.ts"],
+  "exclude": ["dist", "node_modules"]
 }

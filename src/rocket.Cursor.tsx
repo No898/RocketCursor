@@ -1,19 +1,12 @@
-import React, {
-  useEffect,
-  useRef,
-  useId,
-  useMemo,
-  useCallback,
-  useState,
-} from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 
-type Props = {
+export type RocketCursorProps = {
   size?: number;
   threshold?: number;
   flameHideTimeout?: number;
   isVisible?: boolean;
   hideCursor?: boolean;
-  followSpeed?: number; // 0-1, higher = faster reaction (keeps the older snappy feel)
+  followSpeed?: number;
 };
 
 // SVG components for flame and rocket visuals
@@ -91,17 +84,18 @@ const RocketSvg = () => (
   </g>
 );
 
-const RocketCursor: React.FC<Props> = ({
+const RocketCursor = ({
   size = 50,
   threshold = 10,
   flameHideTimeout = 300,
   isVisible = true,
   hideCursor = false,
-  followSpeed = 0.18, // default smoothing similar to původní chování
-}) => {
+  followSpeed = 0.18,
+}: RocketCursorProps) => {
   const gradientId = useId();
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const flameRef = useRef<SVGGElement | null>(null);
+  const svgRef = useRef<SVGSVGElement | null>(null);
   const target = useRef({
     x: typeof window !== "undefined" ? window.innerWidth / 2 : 0,
     y: typeof window !== "undefined" ? window.innerHeight / 2 : 0,
@@ -110,7 +104,6 @@ const RocketCursor: React.FC<Props> = ({
   const angleRef = useRef(0);
   const lastMoveTs = useRef<number>(Date.now());
   const rafRef = useRef<number | null>(null);
-  const [isMoving, setIsMoving] = useState(false);
   const isMovingRef = useRef(false);
   const [visible, setVisible] = useState(isVisible);
   const lastSignificantPosition = useRef({ ...target.current });
@@ -121,23 +114,26 @@ const RocketCursor: React.FC<Props> = ({
   }, [isVisible]);
 
   useEffect(() => {
-    if (hideCursor) {
-      document.body.style.cursor = "none";
-    } else {
-      document.body.style.cursor = "";
+    if (!hideCursor) {
+      return;
     }
 
+    const previousCursor = document.body.style.cursor;
+    document.body.style.cursor = "none";
+
     return () => {
-      document.body.style.cursor = "";
+      document.body.style.cursor = previousCursor;
     };
   }, [hideCursor]);
 
   const handleMouseMove = useCallback(
     (e: MouseEvent) => {
-      const t = e.target as Element | null;
-      const exclude = t && t.closest && t.closest(".no-rocket-cursor");
+      const targetElement = e.target instanceof Element ? e.target : null;
+      const exclude = targetElement?.closest(".no-rocket-cursor");
       const shouldShow = !exclude && isVisible;
-      setVisible(shouldShow);
+      setVisible((currentVisible) =>
+        currentVisible === shouldShow ? currentVisible : shouldShow
+      );
       if (!shouldShow) return;
 
       target.current.x = e.clientX;
@@ -156,14 +152,12 @@ const RocketCursor: React.FC<Props> = ({
         };
       }
 
-      setIsMoving(true);
       isMovingRef.current = true;
       if (flameTimeoutRef.current) {
         window.clearTimeout(flameTimeoutRef.current);
       }
       flameTimeoutRef.current = window.setTimeout(
         () => {
-          setIsMoving(false);
           isMovingRef.current = false;
         },
         flameHideTimeout
@@ -173,19 +167,22 @@ const RocketCursor: React.FC<Props> = ({
   );
 
   const handleMouseOut = useCallback((e: MouseEvent) => {
-    const rel = e.relatedTarget as Element | null;
+    const rel = e.relatedTarget instanceof Element ? e.relatedTarget : null;
     if (!rel || rel.nodeName === "HTML") {
       setVisible(false);
-      setIsMoving(false);
       isMovingRef.current = false;
     }
   }, []);
 
   const handleVisibilityChange = useCallback(() => {
     if (document.visibilityState === "visible") {
-      setVisible(true);
+      setVisible(isVisible);
+      return;
     }
-  }, []);
+
+    setVisible(false);
+    isMovingRef.current = false;
+  }, [isVisible]);
 
   useEffect(() => {
     window.addEventListener("mousemove", handleMouseMove, { passive: true });
@@ -211,16 +208,15 @@ const RocketCursor: React.FC<Props> = ({
 
       const el = wrapperRef.current;
       if (el) {
-        // Shift rocket so the nose (not the center) meets the cursor
-        const dirRad = (angleRef.current - 45) * (Math.PI / 180); // remove the art's 45° offset
-        const noseOffset = size * 0.35; // distance from center to nose, scaled with size
+        const dirRad = (angleRef.current - 45) * (Math.PI / 180);
+        const noseOffset = size * 0.35;
         const noseX = Math.cos(dirRad) * noseOffset;
         const noseY = Math.sin(dirRad) * noseOffset;
 
         el.style.transform = `translate3d(${current.current.x - noseX}px, ${
           current.current.y - noseY
         }px, 0) translate(-50%, -50%)`;
-        const svg = el.querySelector("svg");
+        const svg = svgRef.current;
         if (svg) {
           svg.style.transform = `rotate(${angleRef.current}deg)`;
         }
@@ -244,7 +240,14 @@ const RocketCursor: React.FC<Props> = ({
         window.clearTimeout(flameTimeoutRef.current);
       }
     };
-  }, [handleMouseMove, handleMouseOut, handleVisibilityChange]);
+  }, [
+    flameHideTimeout,
+    followSpeed,
+    handleMouseMove,
+    handleMouseOut,
+    handleVisibilityChange,
+    size,
+  ]);
 
   const wrapperStyle = useMemo(
     () => ({
@@ -277,6 +280,7 @@ const RocketCursor: React.FC<Props> = ({
   return (
     <div ref={wrapperRef} style={wrapperStyle}>
       <svg
+        ref={svgRef}
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 416.449 516.449"
         style={svgStyle}
