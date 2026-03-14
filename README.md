@@ -8,6 +8,8 @@
 If you only want the packaged rocket, use the default export.
 If you want to build your own cursor, you do not need to fork this library. Use `CursorFollower` and render your own component inside it.
 
+![Rocket Cursor demo](https://raw.githubusercontent.com/No898/RocketCursor/main/assets/rocket-cursor-demo.gif)
+
 ## Installation
 
 ```bash
@@ -357,10 +359,17 @@ node ./scripts/bump-version.mjs patch --dry-run
 
 ### Unreleased
 
+- Merged validation and publish into a single GitHub Actions workflow
+- Made package smoke parsing tolerant to lifecycle logs in CI
+
+### 2.1.2
+
 - Added `CursorFollower` as a public API for custom cursors
-- Added smoke coverage for the generic API
-- Expanded the demo with custom cursor examples
-- Reworked the README around custom SVG usage
+- Added custom cursor docs, examples, and the local demo star variant
+- Expanded package coverage with component tests and tarball smoke checks
+- Added release guards and version helper scripts for npm publishing
+- Improved runtime controls for reduced motion, coarse pointers, visibility, and custom cursor options
+- Modernized the package build, exports, and published type output
 
 ### 2.1.1
 
