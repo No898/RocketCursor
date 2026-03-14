@@ -40,6 +40,8 @@ function App() {
         flameHideTimeout={250}
         hideCursor={false}   // keep native cursor visible
         followSpeed={0.35}   // 0-1, higher = snappier
+        excludeSelector=".no-rocket-cursor, [data-hide-rocket]"
+        zIndex={1200}
       />
     </div>
   );
@@ -52,12 +54,18 @@ export default App;
 
 | Prop               | Type    | Default | Description                                                |
 | ------------------ | ------- | ------- | ---------------------------------------------------------- |
+| `className`        | string  | `undefined` | Optional class passed to the rocket wrapper.             |
+| `disabled`         | boolean | `false` | Disables the custom cursor entirely.                       |
+| `disableOnCoarsePointer` | boolean | `true` | Automatically disables the cursor on touch/coarse pointers. |
+| `excludeSelector`  | string  | `".no-rocket-cursor"` | CSS selector for regions where the rocket should hide. |
+| `respectReducedMotion` | boolean | `true` | Disables the rocket when the user prefers reduced motion. |
 | `size`             | number  | `50`    | The size of the rocket cursor in pixels.                   |
 | `threshold`        | number  | `10`    | Minimum distance (pixels) to move before the rocket rotates. |
 | `isVisible`        | boolean | `true`  | Initial visibility state of the rocket cursor.             |
 | `flameHideTimeout` | number  | `300`   | Time in milliseconds before the flame hides after stopping.|
 | `hideCursor`       | boolean | `false` | Whether to hide the normal cursor (true) or show both.     |
 | `followSpeed`      | number  | `0.18`  | Follow smoothing (0-1). Higher = faster/snappier following. |
+| `zIndex`           | number  | `9999`  | Wrapper stacking order for the rocket cursor.              |
 
 ## Features
 
@@ -68,7 +76,8 @@ export default App;
 - **Flame Effect**: Dynamic flame animation when the cursor is moving
 - **Collision-Free**: Uses React's `useId()` to prevent SVG gradient ID collisions
 - **Customizable**: Easily adjust size, rotation threshold, visibility, positioning, and flame duration
-- **Element-Specific Visibility**: Automatically hides the rocket cursor over elements with the class `no-rocket-cursor`
+- **Accessible Defaults**: Respects reduced-motion users and disables itself on coarse pointers by default
+- **Element-Specific Visibility**: Automatically hides the rocket cursor over elements matching your `excludeSelector`
 - **Performance Optimized**: Uses `requestAnimationFrame` and hardware acceleration for smooth animations
 - **TypeScript**: Full TypeScript support with proper type definitions
 

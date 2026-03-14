@@ -1,12 +1,59 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 
 export type RocketCursorProps = {
+  className?: string;
+  disabled?: boolean;
+  disableOnCoarsePointer?: boolean;
+  excludeSelector?: string;
+  respectReducedMotion?: boolean;
   size?: number;
   threshold?: number;
   flameHideTimeout?: number;
   isVisible?: boolean;
   hideCursor?: boolean;
   followSpeed?: number;
+  zIndex?: number;
+};
+
+const getMediaQueryMatch = (query: string) =>
+  typeof window !== "undefined" && typeof window.matchMedia === "function"
+    ? window.matchMedia(query).matches
+    : false;
+
+const subscribeToMediaQuery = (
+  mediaQueryList: MediaQueryList,
+  listener: () => void
+) => {
+  if (typeof mediaQueryList.addEventListener === "function") {
+    mediaQueryList.addEventListener("change", listener);
+
+    return () => mediaQueryList.removeEventListener("change", listener);
+  }
+
+  mediaQueryList.addListener(listener);
+
+  return () => mediaQueryList.removeListener(listener);
+};
+
+const useMediaQueryMatch = (query: string) => {
+  const [matches, setMatches] = useState(() => getMediaQueryMatch(query));
+
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+      return;
+    }
+
+    const mediaQueryList = window.matchMedia(query);
+    const updateMatch = () => {
+      setMatches(mediaQueryList.matches);
+    };
+
+    updateMatch();
+
+    return subscribeToMediaQuery(mediaQueryList, updateMatch);
+  }, [query]);
+
+  return matches;
 };
 
 // SVG components for flame and rocket visuals
@@ -85,17 +132,29 @@ const RocketSvg = () => (
 );
 
 const RocketCursor = ({
+  className,
+  disabled = false,
+  disableOnCoarsePointer = true,
+  excludeSelector = ".no-rocket-cursor",
+  respectReducedMotion = true,
   size = 50,
   threshold = 10,
   flameHideTimeout = 300,
   isVisible = true,
   hideCursor = false,
   followSpeed = 0.18,
+  zIndex = 9999,
 }: RocketCursorProps) => {
   const gradientId = useId();
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const flameRef = useRef<SVGGElement | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
+  const prefersReducedMotion = useMediaQueryMatch("(prefers-reduced-motion: reduce)");
+  const hasCoarsePointer = useMediaQueryMatch("(pointer: coarse)");
+  const isInteractionDisabled =
+    disabled ||
+    (disableOnCoarsePointer && hasCoarsePointer) ||
+    (respectReducedMotion && prefersReducedMotion);
   const target = useRef({
     x: typeof window !== "undefined" ? window.innerWidth / 2 : 0,
     y: typeof window !== "undefined" ? window.innerHeight / 2 : 0,
@@ -105,16 +164,16 @@ const RocketCursor = ({
   const lastMoveTs = useRef<number>(Date.now());
   const rafRef = useRef<number | null>(null);
   const isMovingRef = useRef(false);
-  const [visible, setVisible] = useState(isVisible);
+  const [visible, setVisible] = useState(isVisible && !isInteractionDisabled);
   const lastSignificantPosition = useRef({ ...target.current });
   const flameTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
-    setVisible(isVisible);
-  }, [isVisible]);
+    setVisible(isVisible && !isInteractionDisabled);
+  }, [isInteractionDisabled, isVisible]);
 
   useEffect(() => {
-    if (!hideCursor) {
+    if (!hideCursor || isInteractionDisabled) {
       return;
     }
 
@@ -124,13 +183,13 @@ const RocketCursor = ({
     return () => {
       document.body.style.cursor = previousCursor;
     };
-  }, [hideCursor]);
+  }, [hideCursor, isInteractionDisabled]);
 
   const handleMouseMove = useCallback(
     (e: MouseEvent) => {
       const targetElement = e.target instanceof Element ? e.target : null;
-      const exclude = targetElement?.closest(".no-rocket-cursor");
-      const shouldShow = !exclude && isVisible;
+      const exclude = excludeSelector ? targetElement?.closest(excludeSelector) : null;
+      const shouldShow = !exclude && isVisible && !isInteractionDisabled;
       setVisible((currentVisible) =>
         currentVisible === shouldShow ? currentVisible : shouldShow
       );
@@ -163,7 +222,7 @@ const RocketCursor = ({
         flameHideTimeout
       );
     },
-    [threshold, flameHideTimeout, isVisible]
+    [excludeSelector, flameHideTimeout, isInteractionDisabled, isVisible, threshold]
   );
 
   const handleMouseOut = useCallback((e: MouseEvent) => {
@@ -176,15 +235,22 @@ const RocketCursor = ({
 
   const handleVisibilityChange = useCallback(() => {
     if (document.visibilityState === "visible") {
-      setVisible(isVisible);
+      setVisible(isVisible && !isInteractionDisabled);
       return;
     }
 
     setVisible(false);
     isMovingRef.current = false;
-  }, [isVisible]);
+  }, [isInteractionDisabled, isVisible]);
 
   useEffect(() => {
+    if (isInteractionDisabled) {
+      setVisible(false);
+      isMovingRef.current = false;
+
+      return;
+    }
+
     window.addEventListener("mousemove", handleMouseMove, { passive: true });
     document.addEventListener("mouseout", handleMouseOut);
     document.addEventListener("visibilitychange", handleVisibilityChange);
@@ -246,6 +312,7 @@ const RocketCursor = ({
     handleMouseMove,
     handleMouseOut,
     handleVisibilityChange,
+    isInteractionDisabled,
     size,
   ]);
 
@@ -255,13 +322,13 @@ const RocketCursor = ({
       left: 0,
       top: 0,
       pointerEvents: "none" as const,
-      zIndex: 9999,
+      zIndex,
       width: `${size}px`,
       height: `${size * 1.5}px`,
       willChange: "transform",
       display: visible ? "block" : "none",
     }),
-    [size, visible]
+    [size, visible, zIndex]
   );
 
   const svgStyle = useMemo(
@@ -278,7 +345,13 @@ const RocketCursor = ({
   }
 
   return (
-    <div ref={wrapperRef} style={wrapperStyle}>
+    <div
+      aria-hidden="true"
+      className={className}
+      data-rocket-cursor=""
+      ref={wrapperRef}
+      style={wrapperStyle}
+    >
       <svg
         ref={svgRef}
         xmlns="http://www.w3.org/2000/svg"
