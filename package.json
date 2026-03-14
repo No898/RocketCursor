@@ -22,14 +22,16 @@
   "scripts": {
     "build": "tsup",
     "check": "npm run typecheck && npm run test && npm run build && publint && attw --pack .",
-    "check:published": "node ./scripts/check-published-version.mjs",
+    "check:published": "node ./scripts/version-status.mjs --require-ahead --published-only",
     "dev": "vite",
     "demo": "vite",
     "prepublishOnly": "npm run typecheck && npm run test && npm run build && publint",
     "prepare": "simple-git-hooks",
     "test": "vitest run",
     "test:package": "node ./scripts/smoke-pack.mjs",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "version:check": "node ./scripts/version-status.mjs --require-ahead",
+    "version:status": "node ./scripts/version-status.mjs"
   },
   "files": [
     "dist",
