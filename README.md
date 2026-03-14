@@ -84,6 +84,7 @@ export default App;
 ## Development
 
 ```bash
+nvm use
 npm install
 npm run demo
 ```
@@ -97,6 +98,14 @@ npm run test:package
 npm run build
 npm run check
 ```
+
+CI and release workflows use the version pinned in `.nvmrc`.
+
+## Release
+
+Push a tag in the format `vX.Y.Z` after updating `package.json`, or trigger the release workflow manually.
+
+The release workflow expects an `NPM_TOKEN` repository secret with publish access.
 
 ## Demo
 
