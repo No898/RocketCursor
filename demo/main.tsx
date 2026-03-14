@@ -3,162 +3,88 @@ import ReactDOM from 'react-dom/client';
 import RocketCursor, { CursorFollower } from '../src';
 import './styles.css';
 
-type CursorMode = 'rocket' | 'starship';
+type CursorMode = 'rocket' | 'star';
 
-function StarshipCursor({ isMoving }: { isMoving: boolean }) {
-  const saucerGradientId = React.useId();
-  const saucerCenterId = React.useId();
-  const hullGradientId = React.useId();
-  const nacelleGradientId = React.useId();
-  const bussardGradientId = React.useId();
-  const exhaustGradientId = React.useId();
-  const trailGradientId = React.useId();
+function StarCursor({ isMoving }: { isMoving: boolean }) {
+  const starGradientId = React.useId();
+  const coreGradientId = React.useId();
+  const glowGradientId = React.useId();
+  const streakGradientId = React.useId();
   const shadowId = React.useId();
 
   return (
     <svg
       aria-hidden="true"
       height="100%"
-      viewBox="0 0 360 220"
+      viewBox="0 0 220 180"
       width="100%"
       xmlns="http://www.w3.org/2000/svg"
     >
       <defs>
-        <radialGradient id={saucerGradientId} cx="58%" cy="50%" r="68%">
+        <radialGradient id={glowGradientId} cx="50%" cy="50%" r="70%">
+          <stop offset="0" stopColor="#fff7d6" stopOpacity="0.92" />
+          <stop offset="0.55" stopColor="#7ee2ff" stopOpacity="0.32" />
+          <stop offset="1" stopColor="#7ee2ff" stopOpacity="0" />
+        </radialGradient>
+        <linearGradient id={starGradientId} x1="62" y1="36" x2="154" y2="142" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#fffdf3" />
+          <stop offset="0.46" stopColor="#ffd874" />
+          <stop offset="1" stopColor="#ff9e47" />
+        </linearGradient>
+        <radialGradient id={coreGradientId} cx="45%" cy="45%" r="70%">
           <stop offset="0" stopColor="#ffffff" />
-          <stop offset="0.62" stopColor="#edf1f6" />
-          <stop offset="1" stopColor="#c4cfdd" />
+          <stop offset="0.4" stopColor="#fff2b8" />
+          <stop offset="1" stopColor="#ffd15d" />
         </radialGradient>
-        <radialGradient id={saucerCenterId} cx="50%" cy="50%" r="70%">
-          <stop offset="0" stopColor="#ffffff" />
-          <stop offset="0.48" stopColor="#d2dbe7" />
-          <stop offset="1" stopColor="#7cbfff" />
-        </radialGradient>
-        <linearGradient id={hullGradientId} x1="126" y1="74" x2="246" y2="152" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#f7faff" />
-          <stop offset="0.46" stopColor="#d6dde8" />
-          <stop offset="1" stopColor="#8897ac" />
+        <linearGradient id={streakGradientId} x1="8" y1="90" x2="86" y2="90" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#92eaff" stopOpacity="0" />
+          <stop offset="0.55" stopColor="#92eaff" stopOpacity="0.22" />
+          <stop offset="1" stopColor="#f1fbff" stopOpacity="0.85" />
         </linearGradient>
-        <linearGradient id={nacelleGradientId} x1="18" y1="46" x2="202" y2="46" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#f4f8fd" />
-          <stop offset="0.55" stopColor="#d9e1ec" />
-          <stop offset="1" stopColor="#98a7bc" />
-        </linearGradient>
-        <radialGradient id={bussardGradientId} cx="50%" cy="50%" r="72%">
-          <stop offset="0" stopColor="#f4fbff" />
-          <stop offset="0.58" stopColor="#8bd3ff" />
-          <stop offset="1" stopColor="#3aa2ef" />
-        </radialGradient>
-        <linearGradient id={exhaustGradientId} x1="18" y1="46" x2="42" y2="46" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#00b8ff" />
-          <stop offset="1" stopColor="#b7ecff" />
-        </linearGradient>
-        <linearGradient id={trailGradientId} x1="4" y1="110" x2="96" y2="110" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#78c7ff" stopOpacity="0" />
-          <stop offset="0.42" stopColor="#78c7ff" stopOpacity="0.2" />
-          <stop offset="1" stopColor="#d5f3ff" stopOpacity="0.78" />
-        </linearGradient>
-        <filter id={shadowId} x="-25%" y="-35%" width="150%" height="170%">
-          <feDropShadow dx="0" dy="3" stdDeviation="5" floodColor="#7aa6d8" floodOpacity="0.24" />
+        <filter id={shadowId} x="-30%" y="-30%" width="160%" height="160%">
+          <feDropShadow dx="0" dy="3" stdDeviation="6" floodColor="#ffca56" floodOpacity="0.26" />
         </filter>
       </defs>
 
       <g
         style={{
-          opacity: isMoving ? 1 : 0.34,
-          transform: `scaleX(${isMoving ? 1 : 0.82})`,
-          transformOrigin: '90px 110px',
+          opacity: isMoving ? 1 : 0.28,
+          transform: `scaleX(${isMoving ? 1 : 0.84})`,
+          transformOrigin: '88px 90px',
           transition: 'opacity 140ms ease, transform 140ms ease',
         }}
       >
-        <path d="M6 110C22 95 44 88 82 90L96 96L96 124L82 130C44 132 22 125 6 110Z" fill={`url(#${trailGradientId})`} />
-        <path d="M20 110C37 101 56 100 90 102" stroke="rgba(230, 248, 255, 0.66)" strokeLinecap="round" strokeWidth="2.4" />
-        <path d="M20 110C37 119 56 120 90 118" stroke="rgba(150, 219, 255, 0.48)" strokeLinecap="round" strokeWidth="2" />
+        <path d="M8 90C18 77 33 70 58 72L82 78L82 102L58 108C33 110 18 103 8 90Z" fill={`url(#${streakGradientId})`} />
+        <path d="M20 90C34 82 48 80 76 82" stroke="rgba(233, 250, 255, 0.72)" strokeLinecap="round" strokeWidth="2.8" />
+        <path d="M18 74C33 69 52 69 73 71" stroke="rgba(150, 224, 255, 0.38)" strokeLinecap="round" strokeWidth="1.8" />
+        <path d="M18 106C33 111 52 111 73 109" stroke="rgba(150, 224, 255, 0.34)" strokeLinecap="round" strokeWidth="1.8" />
+        <path d="M30 58C44 54 58 55 71 59" stroke="rgba(174, 235, 255, 0.26)" strokeLinecap="round" strokeWidth="1.6" />
+        <path d="M30 122C44 126 58 125 71 121" stroke="rgba(174, 235, 255, 0.22)" strokeLinecap="round" strokeWidth="1.6" />
+        <path d="M82 45C74 58 72 72 74 90" stroke="rgba(203, 244, 255, 0.18)" strokeLinecap="round" strokeWidth="1.4" />
+        <path d="M82 135C74 122 72 108 74 90" stroke="rgba(203, 244, 255, 0.18)" strokeLinecap="round" strokeWidth="1.4" />
       </g>
 
       <g filter={`url(#${shadowId})`}>
+        <circle cx="102" cy="90" r="58" fill={`url(#${glowGradientId})`} />
         <path
-          d="M92 94C112 73 144 63 188 64H208C224 64 239 71 249 82L252 87L248 92C240 100 227 106 212 108H182C143 108 113 103 92 94Z"
-          fill="rgba(176, 188, 205, 0.34)"
-        />
-
-        <g>
-          <rect x="18" y="34" width="164" height="28" rx="14" fill={`url(#${nacelleGradientId})`} stroke="#7c8899" strokeWidth="1.5" />
-          <rect x="18" y="158" width="164" height="28" rx="14" fill={`url(#${nacelleGradientId})`} stroke="#7c8899" strokeWidth="1.5" />
-          <rect x="18" y="34" width="22" height="28" rx="14" fill={`url(#${exhaustGradientId})`} />
-          <rect x="18" y="158" width="22" height="28" rx="14" fill={`url(#${exhaustGradientId})`} />
-          <path d="M42 40H145" stroke="#0ca9ef" strokeLinecap="round" strokeWidth="4" />
-          <path d="M42 164H145" stroke="#0ca9ef" strokeLinecap="round" strokeWidth="4" />
-          <path d="M144 37H168C176 37 182 43 182 48V62C182 54 176 48 168 48H144Z" fill="#f5f8fc" />
-          <path d="M144 172H168C176 172 182 166 182 161V158C182 166 176 172 168 172H144Z" fill="#f5f8fc" />
-          <ellipse cx="174" cy="48" rx="16" ry="14" fill={`url(#${bussardGradientId})`} stroke="#6f7e92" strokeWidth="1.3" />
-          <ellipse cx="174" cy="172" rx="16" ry="14" fill={`url(#${bussardGradientId})`} stroke="#6f7e92" strokeWidth="1.3" />
-          <path d="M170 35V61" stroke="rgba(243, 249, 255, 0.7)" strokeWidth="1.2" />
-          <path d="M170 159V185" stroke="rgba(243, 249, 255, 0.7)" strokeWidth="1.2" />
-        </g>
-
-        <path
-          d="M150 87C169 88 189 92 208 100L190 103C171 101 158 98 146 94Z"
-          fill="rgba(156, 167, 186, 0.9)"
-          stroke="rgba(248, 252, 255, 0.4)"
+          d="M102 31L117 65L155 69L127 92L134 129L102 110L70 129L77 92L49 69L87 65Z"
+          fill={`url(#${starGradientId})`}
+          stroke="#fff7de"
           strokeLinejoin="round"
-          strokeWidth="1.1"
+          strokeWidth="3"
         />
         <path
-          d="M150 133C169 132 189 128 208 120L190 117C171 119 158 122 146 126Z"
-          fill="rgba(156, 167, 186, 0.9)"
-          stroke="rgba(248, 252, 255, 0.4)"
-          strokeLinejoin="round"
-          strokeWidth="1.1"
+          d="M102 45L113 69L140 72L120 89L125 115L102 101L79 115L84 89L64 72L91 69Z"
+          fill={`url(#${coreGradientId})`}
+          fillOpacity="0.9"
         />
-        <path
-          d="M152 77C160 66 176 58 198 56L222 56C236 56 247 59 255 66L251 72C243 79 232 82 219 82H182C170 82 160 80 152 77Z"
-          fill="rgba(247, 250, 255, 0.94)"
-          stroke="rgba(118, 129, 146, 0.65)"
-          strokeWidth="1.3"
-        />
-        <path
-          d="M152 143C160 154 176 162 198 164L222 164C236 164 247 161 255 154L251 148C243 141 232 138 219 138H182C170 138 160 140 152 143Z"
-          fill="rgba(247, 250, 255, 0.94)"
-          stroke="rgba(118, 129, 146, 0.65)"
-          strokeWidth="1.3"
-        />
-
-        <path
-          d="M104 98C112 86 129 78 152 76H194C214 76 229 87 229 100V120C229 133 214 144 194 144H152C129 142 112 134 104 122Z"
-          fill={`url(#${hullGradientId})`}
-          stroke="#7b8797"
-          strokeWidth="1.5"
-        />
-        <path d="M120 110H210" stroke="rgba(74, 84, 102, 0.34)" strokeLinecap="round" strokeWidth="1.8" />
-        <path d="M136 90H192" stroke="rgba(255, 255, 255, 0.6)" strokeLinecap="round" strokeWidth="1.2" />
-        <path d="M136 130H192" stroke="rgba(255, 255, 255, 0.34)" strokeLinecap="round" strokeWidth="1.1" />
-        <path d="M170 80V140" stroke="rgba(114, 125, 142, 0.38)" strokeLinecap="round" strokeWidth="1.1" />
-
-        <path
-          d="M219 88L251 80C268 77 282 78 294 84L292 92C281 97 268 100 252 100L219 98Z"
-          fill="rgba(245, 248, 253, 0.98)"
-          stroke="#7a8697"
-          strokeWidth="1.35"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M219 132L251 140C268 143 282 142 294 136L292 128C281 123 268 120 252 120L219 122Z"
-          fill="rgba(245, 248, 253, 0.98)"
-          stroke="#7a8697"
-          strokeWidth="1.35"
-          strokeLinejoin="round"
-        />
-
-        <circle cx="284" cy="110" r="74" fill={`url(#${saucerGradientId})`} stroke="#6c7889" strokeWidth="1.6" />
-        <circle cx="284" cy="110" r="62" fill="none" stroke="rgba(123, 132, 149, 0.38)" strokeWidth="1.1" />
-        <circle cx="284" cy="110" r="42" fill="none" stroke="rgba(123, 132, 149, 0.28)" strokeWidth="1" />
-        <circle cx="284" cy="110" r="24" fill="rgba(241, 246, 252, 0.92)" stroke="rgba(125, 136, 152, 0.45)" strokeWidth="1.1" />
-        <circle cx="284" cy="110" r="12" fill={`url(#${saucerCenterId})`} stroke="rgba(83, 126, 180, 0.52)" strokeWidth="1" />
-        <path d="M216 110H344" stroke="rgba(100, 111, 128, 0.32)" strokeLinecap="round" strokeWidth="1.3" />
-        <path d="M284 38V182" stroke="rgba(100, 111, 128, 0.18)" strokeWidth="1" />
-        <path d="M232 58C254 50 314 50 336 58" stroke="rgba(255, 255, 255, 0.52)" strokeLinecap="round" strokeWidth="1.1" />
-        <path d="M232 162C254 170 314 170 336 162" stroke="rgba(255, 255, 255, 0.36)" strokeLinecap="round" strokeWidth="1.1" />
+        <circle cx="102" cy="90" r="15" fill="rgba(255, 248, 218, 0.9)" />
+        <path d="M102 31L108 57" stroke="rgba(255, 255, 255, 0.48)" strokeLinecap="round" strokeWidth="2" />
+        <path d="M146 71L121 77" stroke="rgba(255, 255, 255, 0.34)" strokeLinecap="round" strokeWidth="1.8" />
+        <path d="M146 109L121 101" stroke="rgba(255, 255, 255, 0.3)" strokeLinecap="round" strokeWidth="1.8" />
+        <path d="M102 149L105 119" stroke="rgba(255, 255, 255, 0.24)" strokeLinecap="round" strokeWidth="1.6" />
+        <path d="M58 109L82 101" stroke="rgba(255, 255, 255, 0.24)" strokeLinecap="round" strokeWidth="1.6" />
+        <path d="M58 71L82 77" stroke="rgba(255, 255, 255, 0.28)" strokeLinecap="round" strokeWidth="1.6" />
       </g>
     </svg>
   );
@@ -173,8 +99,8 @@ function App() {
   const [followSpeed, setFollowSpeed] = React.useState(0.15);
   const [cursorMode, setCursorMode] = React.useState<CursorMode>('rocket');
   const [activePreset, setActivePreset] = React.useState<string | null>("Cruise");
-  const cursorLabel = cursorMode === 'rocket' ? 'Rocket' : 'Starship';
-  const motionLabel = cursorMode === 'rocket' ? 'Flame' : 'Warp glow';
+  const cursorLabel = cursorMode === 'rocket' ? 'Rocket' : 'Star';
+  const motionLabel = cursorMode === 'rocket' ? 'Flame' : 'Air wake';
   const presets = [
     {
       name: "Arcade",
@@ -245,17 +171,17 @@ function App() {
         />
       ) : (
         <CursorFollower
-          anchorOffset={{ x: size * 1.02, y: 0 }}
+          anchorOffset={{ x: size * 0.48, y: 0 }}
           followSpeed={followSpeed}
-          height={Math.round(size * 1.42)}
+          height={Math.round(size * 1.45)}
           hideCursor={hideCursor}
           isVisible={isVisible}
           movingTimeout={flameHideTimeout}
           threshold={threshold}
-          width={Math.round(size * 2.45)}
+          width={Math.round(size * 1.8)}
           zIndex={9999}
         >
-          {({ isMoving }) => <StarshipCursor isMoving={isMoving} />}
+          {({ isMoving }) => <StarCursor isMoving={isMoving} />}
         </CursorFollower>
       )}
 
@@ -272,7 +198,7 @@ function App() {
             <div className="hero-grid">
               <div className="hero-copy">
                 <h1>Built-in rocket. Custom-ready motion.</h1>
-                <p className="lead">Switch modes, tune the movement, and test a custom SVG starship.</p>
+                <p className="lead">Switch modes, tune the movement, and test a custom SVG star with an air wake.</p>
 
                 <div className="mode-row" role="group" aria-label="Cursor mode">
                   <button
@@ -284,12 +210,12 @@ function App() {
                     <span>Built-in preset</span>
                   </button>
                   <button
-                    className={`mode-button${cursorMode === 'starship' ? ' is-active' : ''}`}
-                    onClick={() => setCursorMode('starship')}
+                    className={`mode-button${cursorMode === 'star' ? ' is-active' : ''}`}
+                    onClick={() => setCursorMode('star')}
                     type="button"
                   >
-                    <strong>Starship</strong>
-                    <span>Custom SVG `CursorFollower`</span>
+                    <strong>Star</strong>
+                    <span>Custom SVG with air wake</span>
                   </button>
                 </div>
 
