@@ -306,7 +306,10 @@ npm run test
 npm run test:package
 npm run build
 npm run check
+npm run check:published
 ```
+
+`npm install` also installs a local `pre-push` hook. When you push to `main` or `master`, the hook checks the latest npm version and blocks the push if publish-relevant files changed but `package.json` was not bumped ahead of what is already published.
 
 ## Demo
 
@@ -327,6 +330,12 @@ Update the package version, then either:
 - or trigger the release workflow manually
 
 The release workflow expects an `NPM_TOKEN` repository secret with publish access.
+
+If you want to verify the version manually before tagging, run:
+
+```bash
+npm run check:published
+```
 
 ## Changelog
 
