@@ -7,9 +7,11 @@ type CursorMode = 'rocket' | 'starship';
 
 function StarshipCursor({ isMoving }: { isMoving: boolean }) {
   const saucerGradientId = React.useId();
+  const saucerCenterId = React.useId();
   const hullGradientId = React.useId();
   const nacelleGradientId = React.useId();
   const bussardGradientId = React.useId();
+  const exhaustGradientId = React.useId();
   const trailGradientId = React.useId();
   const shadowId = React.useId();
 
@@ -17,157 +19,146 @@ function StarshipCursor({ isMoving }: { isMoving: boolean }) {
     <svg
       aria-hidden="true"
       height="100%"
-      viewBox="0 0 280 150"
+      viewBox="0 0 360 220"
       width="100%"
       xmlns="http://www.w3.org/2000/svg"
     >
       <defs>
-        <linearGradient id={saucerGradientId} x1="132" y1="28" x2="224" y2="120" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#f8fbff" />
-          <stop offset="0.58" stopColor="#d8e2ee" />
-          <stop offset="1" stopColor="#8c9caf" />
-        </linearGradient>
-        <linearGradient id={hullGradientId} x1="58" y1="50" x2="176" y2="106" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#eef6ff" />
-          <stop offset="0.5" stopColor="#c1cfde" />
-          <stop offset="1" stopColor="#74839a" />
-        </linearGradient>
-        <linearGradient id={nacelleGradientId} x1="48" y1="26" x2="238" y2="26" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#60738b" />
-          <stop offset="0.48" stopColor="#cfd9e8" />
-          <stop offset="0.82" stopColor="#94b8ff" />
-          <stop offset="1" stopColor="#dce7f8" />
-        </linearGradient>
-        <radialGradient id={bussardGradientId} cx="50%" cy="50%" r="70%">
-          <stop offset="0" stopColor="#fff2bf" />
-          <stop offset="0.45" stopColor="#ff9b72" />
-          <stop offset="1" stopColor="#ff6c56" />
+        <radialGradient id={saucerGradientId} cx="58%" cy="50%" r="68%">
+          <stop offset="0" stopColor="#ffffff" />
+          <stop offset="0.62" stopColor="#edf1f6" />
+          <stop offset="1" stopColor="#c4cfdd" />
         </radialGradient>
-        <linearGradient id={trailGradientId} x1="10" y1="75" x2="108" y2="75" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#76abff" stopOpacity="0" />
-          <stop offset="0.45" stopColor="#76abff" stopOpacity="0.26" />
-          <stop offset="0.88" stopColor="#b1e7ff" stopOpacity="0.9" />
+        <radialGradient id={saucerCenterId} cx="50%" cy="50%" r="70%">
+          <stop offset="0" stopColor="#ffffff" />
+          <stop offset="0.48" stopColor="#d2dbe7" />
+          <stop offset="1" stopColor="#7cbfff" />
+        </radialGradient>
+        <linearGradient id={hullGradientId} x1="126" y1="74" x2="246" y2="152" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#f7faff" />
+          <stop offset="0.46" stopColor="#d6dde8" />
+          <stop offset="1" stopColor="#8897ac" />
         </linearGradient>
-        <filter id={shadowId} x="-30%" y="-50%" width="160%" height="200%">
-          <feDropShadow dx="0" dy="0" stdDeviation="5" floodColor="#63aefc" floodOpacity="0.24" />
+        <linearGradient id={nacelleGradientId} x1="18" y1="46" x2="202" y2="46" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#f4f8fd" />
+          <stop offset="0.55" stopColor="#d9e1ec" />
+          <stop offset="1" stopColor="#98a7bc" />
+        </linearGradient>
+        <radialGradient id={bussardGradientId} cx="50%" cy="50%" r="72%">
+          <stop offset="0" stopColor="#f4fbff" />
+          <stop offset="0.58" stopColor="#8bd3ff" />
+          <stop offset="1" stopColor="#3aa2ef" />
+        </radialGradient>
+        <linearGradient id={exhaustGradientId} x1="18" y1="46" x2="42" y2="46" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#00b8ff" />
+          <stop offset="1" stopColor="#b7ecff" />
+        </linearGradient>
+        <linearGradient id={trailGradientId} x1="4" y1="110" x2="96" y2="110" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#78c7ff" stopOpacity="0" />
+          <stop offset="0.42" stopColor="#78c7ff" stopOpacity="0.2" />
+          <stop offset="1" stopColor="#d5f3ff" stopOpacity="0.78" />
+        </linearGradient>
+        <filter id={shadowId} x="-25%" y="-35%" width="150%" height="170%">
+          <feDropShadow dx="0" dy="3" stdDeviation="5" floodColor="#7aa6d8" floodOpacity="0.24" />
         </filter>
       </defs>
 
       <g
         style={{
-          opacity: isMoving ? 1 : 0.38,
-          transform: `scaleX(${isMoving ? 1 : 0.8})`,
-          transformOrigin: '90px 75px',
+          opacity: isMoving ? 1 : 0.34,
+          transform: `scaleX(${isMoving ? 1 : 0.82})`,
+          transformOrigin: '90px 110px',
           transition: 'opacity 140ms ease, transform 140ms ease',
         }}
       >
-        <path
-          d="M10 75C26 60 48 55 82 58L108 64L108 86L82 92C48 95 26 90 10 75Z"
-          fill={`url(#${trailGradientId})`}
-        />
-        <path
-          d="M22 75C38 67 58 66 90 68"
-          stroke="rgba(224, 245, 255, 0.78)"
-          strokeLinecap="round"
-          strokeWidth="2.8"
-        />
-        <path
-          d="M22 75C38 83 58 84 90 82"
-          stroke="rgba(142, 206, 255, 0.54)"
-          strokeLinecap="round"
-          strokeWidth="2.2"
-        />
+        <path d="M6 110C22 95 44 88 82 90L96 96L96 124L82 130C44 132 22 125 6 110Z" fill={`url(#${trailGradientId})`} />
+        <path d="M20 110C37 101 56 100 90 102" stroke="rgba(230, 248, 255, 0.66)" strokeLinecap="round" strokeWidth="2.4" />
+        <path d="M20 110C37 119 56 120 90 118" stroke="rgba(150, 219, 255, 0.48)" strokeLinecap="round" strokeWidth="2" />
       </g>
 
       <g filter={`url(#${shadowId})`}>
-        <rect x="72" y="28" width="140" height="18" rx="9" fill={`url(#${nacelleGradientId})`} />
-        <rect x="72" y="104" width="140" height="18" rx="9" fill={`url(#${nacelleGradientId})`} />
-        <ellipse cx="206" cy="37" rx="16" ry="8.5" fill={`url(#${bussardGradientId})`} />
-        <ellipse cx="206" cy="113" rx="16" ry="8.5" fill={`url(#${bussardGradientId})`} />
         <path
-          d="M92 66L138 56L186 38L194 46L150 65L112 72Z"
-          fill="rgba(171, 184, 206, 0.9)"
-          stroke="rgba(231, 240, 255, 0.26)"
+          d="M92 94C112 73 144 63 188 64H208C224 64 239 71 249 82L252 87L248 92C240 100 227 106 212 108H182C143 108 113 103 92 94Z"
+          fill="rgba(176, 188, 205, 0.34)"
+        />
+
+        <g>
+          <rect x="18" y="34" width="164" height="28" rx="14" fill={`url(#${nacelleGradientId})`} stroke="#7c8899" strokeWidth="1.5" />
+          <rect x="18" y="158" width="164" height="28" rx="14" fill={`url(#${nacelleGradientId})`} stroke="#7c8899" strokeWidth="1.5" />
+          <rect x="18" y="34" width="22" height="28" rx="14" fill={`url(#${exhaustGradientId})`} />
+          <rect x="18" y="158" width="22" height="28" rx="14" fill={`url(#${exhaustGradientId})`} />
+          <path d="M42 40H145" stroke="#0ca9ef" strokeLinecap="round" strokeWidth="4" />
+          <path d="M42 164H145" stroke="#0ca9ef" strokeLinecap="round" strokeWidth="4" />
+          <path d="M144 37H168C176 37 182 43 182 48V62C182 54 176 48 168 48H144Z" fill="#f5f8fc" />
+          <path d="M144 172H168C176 172 182 166 182 161V158C182 166 176 172 168 172H144Z" fill="#f5f8fc" />
+          <ellipse cx="174" cy="48" rx="16" ry="14" fill={`url(#${bussardGradientId})`} stroke="#6f7e92" strokeWidth="1.3" />
+          <ellipse cx="174" cy="172" rx="16" ry="14" fill={`url(#${bussardGradientId})`} stroke="#6f7e92" strokeWidth="1.3" />
+          <path d="M170 35V61" stroke="rgba(243, 249, 255, 0.7)" strokeWidth="1.2" />
+          <path d="M170 159V185" stroke="rgba(243, 249, 255, 0.7)" strokeWidth="1.2" />
+        </g>
+
+        <path
+          d="M150 87C169 88 189 92 208 100L190 103C171 101 158 98 146 94Z"
+          fill="rgba(156, 167, 186, 0.9)"
+          stroke="rgba(248, 252, 255, 0.4)"
           strokeLinejoin="round"
           strokeWidth="1.1"
         />
         <path
-          d="M92 84L138 94L186 112L194 104L150 85L112 78Z"
-          fill="rgba(171, 184, 206, 0.9)"
-          stroke="rgba(231, 240, 255, 0.26)"
+          d="M150 133C169 132 189 128 208 120L190 117C171 119 158 122 146 126Z"
+          fill="rgba(156, 167, 186, 0.9)"
+          stroke="rgba(248, 252, 255, 0.4)"
           strokeLinejoin="round"
           strokeWidth="1.1"
         />
         <path
-          d="M62 75C74 61 96 55 122 56H164C177 56 191 63 201 75C191 87 177 94 164 94H122C96 95 74 89 62 75Z"
+          d="M152 77C160 66 176 58 198 56L222 56C236 56 247 59 255 66L251 72C243 79 232 82 219 82H182C170 82 160 80 152 77Z"
+          fill="rgba(247, 250, 255, 0.94)"
+          stroke="rgba(118, 129, 146, 0.65)"
+          strokeWidth="1.3"
+        />
+        <path
+          d="M152 143C160 154 176 162 198 164L222 164C236 164 247 161 255 154L251 148C243 141 232 138 219 138H182C170 138 160 140 152 143Z"
+          fill="rgba(247, 250, 255, 0.94)"
+          stroke="rgba(118, 129, 146, 0.65)"
+          strokeWidth="1.3"
+        />
+
+        <path
+          d="M104 98C112 86 129 78 152 76H194C214 76 229 87 229 100V120C229 133 214 144 194 144H152C129 142 112 134 104 122Z"
           fill={`url(#${hullGradientId})`}
-          stroke="#edf3ff"
-          strokeOpacity="0.38"
-          strokeLinejoin="round"
-          strokeWidth="1.4"
-        />
-        <path
-          d="M98 75H168"
-          stroke="rgba(84, 103, 129, 0.44)"
-          strokeLinecap="round"
-          strokeWidth="1.6"
-        />
-        <ellipse
-          cx="182"
-          cy="75"
-          rx="58"
-          ry="36"
-          fill={`url(#${saucerGradientId})`}
-          stroke="#f7fbff"
-          strokeOpacity="0.5"
+          stroke="#7b8797"
           strokeWidth="1.5"
         />
-        <ellipse
-          cx="190"
-          cy="75"
-          rx="21"
-          ry="12"
-          fill="rgba(120, 177, 255, 0.2)"
-          stroke="rgba(216, 233, 255, 0.42)"
-          strokeWidth="1.2"
+        <path d="M120 110H210" stroke="rgba(74, 84, 102, 0.34)" strokeLinecap="round" strokeWidth="1.8" />
+        <path d="M136 90H192" stroke="rgba(255, 255, 255, 0.6)" strokeLinecap="round" strokeWidth="1.2" />
+        <path d="M136 130H192" stroke="rgba(255, 255, 255, 0.34)" strokeLinecap="round" strokeWidth="1.1" />
+        <path d="M170 80V140" stroke="rgba(114, 125, 142, 0.38)" strokeLinecap="round" strokeWidth="1.1" />
+
+        <path
+          d="M219 88L251 80C268 77 282 78 294 84L292 92C281 97 268 100 252 100L219 98Z"
+          fill="rgba(245, 248, 253, 0.98)"
+          stroke="#7a8697"
+          strokeWidth="1.35"
+          strokeLinejoin="round"
         />
         <path
-          d="M132 75H222"
-          stroke="rgba(92, 110, 138, 0.34)"
-          strokeLinecap="round"
-          strokeWidth="1.6"
+          d="M219 132L251 140C268 143 282 142 294 136L292 128C281 123 268 120 252 120L219 122Z"
+          fill="rgba(245, 248, 253, 0.98)"
+          stroke="#7a8697"
+          strokeWidth="1.35"
+          strokeLinejoin="round"
         />
-        <path
-          d="M148 61C166 56 190 55 214 58"
-          stroke="rgba(246, 250, 255, 0.58)"
-          strokeLinecap="round"
-          strokeWidth="1.2"
-        />
-        <path
-          d="M148 89C166 94 190 95 214 92"
-          stroke="rgba(246, 250, 255, 0.4)"
-          strokeLinecap="round"
-          strokeWidth="1.1"
-        />
-        <ellipse
-          cx="230"
-          cy="75"
-          rx="10"
-          ry="7"
-          fill="rgba(121, 216, 214, 0.82)"
-        />
-        <path
-          d="M146 69L170 69"
-          stroke="rgba(114, 135, 162, 0.35)"
-          strokeLinecap="round"
-          strokeWidth="1.1"
-        />
-        <path
-          d="M146 81L170 81"
-          stroke="rgba(114, 135, 162, 0.26)"
-          strokeLinecap="round"
-          strokeWidth="1.1"
-        />
+
+        <circle cx="284" cy="110" r="74" fill={`url(#${saucerGradientId})`} stroke="#6c7889" strokeWidth="1.6" />
+        <circle cx="284" cy="110" r="62" fill="none" stroke="rgba(123, 132, 149, 0.38)" strokeWidth="1.1" />
+        <circle cx="284" cy="110" r="42" fill="none" stroke="rgba(123, 132, 149, 0.28)" strokeWidth="1" />
+        <circle cx="284" cy="110" r="24" fill="rgba(241, 246, 252, 0.92)" stroke="rgba(125, 136, 152, 0.45)" strokeWidth="1.1" />
+        <circle cx="284" cy="110" r="12" fill={`url(#${saucerCenterId})`} stroke="rgba(83, 126, 180, 0.52)" strokeWidth="1" />
+        <path d="M216 110H344" stroke="rgba(100, 111, 128, 0.32)" strokeLinecap="round" strokeWidth="1.3" />
+        <path d="M284 38V182" stroke="rgba(100, 111, 128, 0.18)" strokeWidth="1" />
+        <path d="M232 58C254 50 314 50 336 58" stroke="rgba(255, 255, 255, 0.52)" strokeLinecap="round" strokeWidth="1.1" />
+        <path d="M232 162C254 170 314 170 336 162" stroke="rgba(255, 255, 255, 0.36)" strokeLinecap="round" strokeWidth="1.1" />
       </g>
     </svg>
   );
@@ -254,14 +245,14 @@ function App() {
         />
       ) : (
         <CursorFollower
-          anchorOffset={{ x: size * 0.8, y: 0 }}
+          anchorOffset={{ x: size * 1.02, y: 0 }}
           followSpeed={followSpeed}
-          height={Math.round(size * 1.08)}
+          height={Math.round(size * 1.42)}
           hideCursor={hideCursor}
           isVisible={isVisible}
           movingTimeout={flameHideTimeout}
           threshold={threshold}
-          width={Math.round(size * 2.1)}
+          width={Math.round(size * 2.45)}
           zIndex={9999}
         >
           {({ isMoving }) => <StarshipCursor isMoving={isMoving} />}
