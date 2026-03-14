@@ -24,6 +24,9 @@ try {
   const tarballPath = path.join(tarballDir, packResult[0].filename);
   const reactVersion = rootPackageJson.devDependencies.react;
   const reactDomVersion = rootPackageJson.devDependencies["react-dom"];
+  const reactTypesVersion = rootPackageJson.devDependencies["@types/react"];
+  const reactDomTypesVersion = rootPackageJson.devDependencies["@types/react-dom"];
+  const typescriptVersion = rootPackageJson.devDependencies.typescript;
 
   await writeFile(
     path.join(consumerDir, "package.json"),
@@ -46,6 +49,9 @@ try {
       tarballPath,
       `react@${reactVersion}`,
       `react-dom@${reactDomVersion}`,
+      `@types/react@${reactTypesVersion}`,
+      `@types/react-dom@${reactDomTypesVersion}`,
+      `typescript@${typescriptVersion}`,
     ],
     {
       cwd: consumerDir,
@@ -58,12 +64,29 @@ try {
     `
 const React = require("react");
 const { renderToString } = require("react-dom/server");
-const RocketCursor = require("rocket-cursor-component").default;
+const packageExports = require("rocket-cursor-component");
+const RocketCursor = packageExports.default;
+const { CursorFollower } = packageExports;
 
-const html = renderToString(React.createElement(RocketCursor));
+if (typeof CursorFollower !== "function") {
+  throw new Error("CommonJS named export smoke test failed.");
+}
 
-if (!html.includes("<svg")) {
+const rocketHtml = renderToString(React.createElement(RocketCursor));
+const followerHtml = renderToString(
+  React.createElement(
+    CursorFollower,
+    null,
+    React.createElement("span", null, "Probe")
+  )
+);
+
+if (!rocketHtml.includes("<svg")) {
   throw new Error("CommonJS smoke test failed.");
+}
+
+if (!followerHtml.includes("Probe")) {
+  throw new Error("CommonJS generic smoke test failed.");
 }
 `
   );
@@ -73,13 +96,53 @@ if (!html.includes("<svg")) {
     `
 import React from "react";
 import { renderToString } from "react-dom/server";
-import RocketCursor from "rocket-cursor-component";
+import RocketCursor, { CursorFollower } from "rocket-cursor-component";
 
-const html = renderToString(React.createElement(RocketCursor));
+if (typeof CursorFollower !== "function") {
+  throw new Error("ESM named export smoke test failed.");
+}
 
-if (!html.includes("<svg")) {
+const rocketHtml = renderToString(React.createElement(RocketCursor));
+const followerHtml = renderToString(
+  React.createElement(CursorFollower, null, React.createElement("span", null, "Probe"))
+);
+
+if (!rocketHtml.includes("<svg")) {
   throw new Error("ESM smoke test failed.");
 }
+
+if (!followerHtml.includes("Probe")) {
+  throw new Error("ESM generic smoke test failed.");
+}
+`
+  );
+
+  await writeFile(
+    path.join(consumerDir, "smoke-types.tsx"),
+    `
+import RocketCursor, {
+  CursorFollower,
+  type CursorFollowerProps,
+  type CursorFollowerRenderState,
+} from "rocket-cursor-component";
+
+const renderCursorState = ({ isMoving }: CursorFollowerRenderState) => (
+  <span>{isMoving ? "moving" : "idle"}</span>
+);
+
+const followerProps: CursorFollowerProps = {
+  children: renderCursorState,
+  wrapperProps: {
+    "data-smoke": "ok",
+  },
+};
+
+export const smokeNodes = (
+  <>
+    <RocketCursor />
+    <CursorFollower {...followerProps} />
+  </>
+);
 `
   );
 
@@ -91,6 +154,25 @@ if (!html.includes("<svg")) {
     cwd: consumerDir,
     stdio: "inherit",
   });
+  execFileSync(
+    path.join(consumerDir, "node_modules", ".bin", "tsc"),
+    [
+      "--noEmit",
+      "--jsx",
+      "react-jsx",
+      "--module",
+      "NodeNext",
+      "--moduleResolution",
+      "NodeNext",
+      "--target",
+      "ES2020",
+      "smoke-types.tsx",
+    ],
+    {
+      cwd: consumerDir,
+      stdio: "inherit",
+    }
+  );
 
   console.log("Package smoke test passed.");
 } finally {
