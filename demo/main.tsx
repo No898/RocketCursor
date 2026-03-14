@@ -1,7 +1,22 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import RocketCursor from '../src';
+import RocketCursor, { CursorFollower } from '../src';
 import './styles.css';
+
+type CursorMode = 'rocket' | 'comet';
+
+function CometCursor({ isMoving }: { isMoving: boolean }) {
+  return (
+    <div className={`comet-cursor${isMoving ? ' is-moving' : ''}`}>
+      <span className="comet-tail" />
+      <span className="comet-glow" />
+      <span className="comet-core" />
+      <span className="comet-ring" />
+      <span className="comet-spark comet-spark-a" />
+      <span className="comet-spark comet-spark-b" />
+    </div>
+  );
+}
 
 function App() {
   const [size, setSize] = React.useState(50);
@@ -10,7 +25,10 @@ function App() {
   const [isVisible, setIsVisible] = React.useState(true);
   const [hideCursor, setHideCursor] = React.useState(false);
   const [followSpeed, setFollowSpeed] = React.useState(0.15);
+  const [cursorMode, setCursorMode] = React.useState<CursorMode>('rocket');
   const [activePreset, setActivePreset] = React.useState<string | null>("Cruise");
+  const cursorLabel = cursorMode === 'rocket' ? 'Rocket' : 'Comet';
+  const motionLabel = cursorMode === 'rocket' ? 'Flame' : 'Tail';
   const presets = [
     {
       name: "Arcade",
@@ -50,10 +68,10 @@ function App() {
     },
   ];
   const telemetry = [
-    { label: 'Rocket size', value: `${size}px` },
+    { label: 'Mode', value: cursorLabel },
+    { label: 'Size', value: `${size}px` },
     { label: 'Follow speed', value: `${Math.round(followSpeed * 100)}%` },
-    { label: 'Flame delay', value: `${flameHideTimeout}ms` },
-    { label: 'Rotation threshold', value: `${threshold}px` },
+    { label: `${motionLabel} delay`, value: `${flameHideTimeout}ms` },
   ];
   const clearActivePreset = () => {
     setActivePreset(null);
@@ -70,14 +88,30 @@ function App() {
 
   return (
     <>
-      <RocketCursor
-        size={size}
-        threshold={threshold}
-        flameHideTimeout={flameHideTimeout}
-        isVisible={isVisible}
-        hideCursor={hideCursor}
-        followSpeed={followSpeed}
-      />
+      {cursorMode === 'rocket' ? (
+        <RocketCursor
+          size={size}
+          threshold={threshold}
+          flameHideTimeout={flameHideTimeout}
+          isVisible={isVisible}
+          hideCursor={hideCursor}
+          followSpeed={followSpeed}
+        />
+      ) : (
+        <CursorFollower
+          anchorOffset={{ x: size * 0.24, y: 0 }}
+          followSpeed={followSpeed}
+          height={size}
+          hideCursor={hideCursor}
+          isVisible={isVisible}
+          movingTimeout={flameHideTimeout}
+          threshold={threshold}
+          width={Math.round(size * 1.4)}
+          zIndex={9999}
+        >
+          {({ isMoving }) => <CometCursor isMoving={isMoving} />}
+        </CursorFollower>
+      )}
 
       <div className="page-shell">
         <div className="starfield" aria-hidden="true" />
@@ -88,13 +122,30 @@ function App() {
 
         <main className="layout">
           <section className="hero panel">
-            <div className="eyebrow">RocketCursor mission control</div>
+            <div className="eyebrow">RocketCursor demo</div>
             <div className="hero-grid">
               <div className="hero-copy">
-                <h1>A cleaner space-themed demo for RocketCursor.</h1>
-                <p className="lead">
-                  Adjust the cursor, move around the page, and see how the rocket responds.
-                </p>
+                <h1>Built-in rocket. Custom-ready motion.</h1>
+                <p className="lead">Switch modes, tune the movement, and test the exclusion zone.</p>
+
+                <div className="mode-row" role="group" aria-label="Cursor mode">
+                  <button
+                    className={`mode-button${cursorMode === 'rocket' ? ' is-active' : ''}`}
+                    onClick={() => setCursorMode('rocket')}
+                    type="button"
+                  >
+                    <strong>Rocket</strong>
+                    <span>Built-in preset</span>
+                  </button>
+                  <button
+                    className={`mode-button${cursorMode === 'comet' ? ' is-active' : ''}`}
+                    onClick={() => setCursorMode('comet')}
+                    type="button"
+                  >
+                    <strong>Comet</strong>
+                    <span>Custom `CursorFollower`</span>
+                  </button>
+                </div>
 
                 <div className="preset-row">
                   {presets.map((preset) => (
@@ -118,37 +169,30 @@ function App() {
                     </div>
                   ))}
                 </div>
-
-                <div className="mission-note">
-                  <span className="mission-badge">Flight note</span>
-                  <p>
-                    Use the open area for testing and the hidden zone to verify exclusion behavior.
-                  </p>
-                </div>
               </div>
 
               <aside className="status-panel">
                 <div className="status-panel-header">
-                  <span className="status-kicker">Live status</span>
-                  <span className="status-pill">Active</span>
+                  <span className="status-kicker">Live</span>
+                  <span className="status-pill">{cursorLabel}</span>
                 </div>
 
                 <ul className="status-list">
                   <li>
-                    <span>Engine flame</span>
-                    <strong>{flameHideTimeout >= 500 ? 'Long burn' : 'Quick fade'}</strong>
+                    <span>{motionLabel}</span>
+                    <strong>{flameHideTimeout >= 500 ? 'Long fade' : 'Quick fade'}</strong>
                   </li>
                   <li>
-                    <span>Pointer behavior</span>
-                    <strong>{hideCursor ? 'Rocket only' : 'Dual mode'}</strong>
+                    <span>Pointer</span>
+                    <strong>{hideCursor ? 'Custom only' : 'Native + custom'}</strong>
                   </li>
                   <li>
-                    <span>Guidance feel</span>
+                    <span>Motion</span>
                     <strong>{followSpeed >= 0.4 ? 'Snappy' : 'Smooth'}</strong>
                   </li>
                   <li>
-                    <span>Visibility</span>
-                    <strong>{isVisible ? 'Visible' : 'Hidden'}</strong>
+                    <span>Turn threshold</span>
+                    <strong>{threshold}px</strong>
                   </li>
                 </ul>
               </aside>
@@ -159,15 +203,15 @@ function App() {
             <div className="section-heading">
               <div>
                 <div className="eyebrow">Control deck</div>
-                <h2>Controls</h2>
+                <h2>Tune the motion</h2>
               </div>
-              <p>Adjust the cursor behavior in real time.</p>
+              <p>Size, lag, trail, and visibility.</p>
             </div>
 
             <div className="controls-grid">
               <div className="control-card">
                 <label htmlFor="size">
-                  <span>Rocket size</span>
+                  <span>Cursor size</span>
                   <strong>{size}px</strong>
                 </label>
                 <input
@@ -203,7 +247,7 @@ function App() {
 
               <div className="control-card">
                 <label htmlFor="flame-time">
-                  <span>Flame visibility time</span>
+                  <span>{motionLabel} visibility time</span>
                   <strong>{flameHideTimeout}ms</strong>
                 </label>
                 <input
@@ -252,8 +296,8 @@ function App() {
                   }}
                 />
                 <span>
-                  <strong>Show rocket</strong>
-                  <small>Keep the custom cursor active on the page.</small>
+                  <strong>Show cursor</strong>
+                  <small>Keep the follower visible on the page.</small>
                 </span>
               </label>
 
@@ -268,7 +312,7 @@ function App() {
                 />
                 <span>
                   <strong>Hide system cursor</strong>
-                  <small>Switch to a full rocket-only navigation mode.</small>
+                  <small>Switch to a custom-only pointer mode.</small>
                 </span>
               </label>
             </div>
@@ -278,22 +322,20 @@ function App() {
             <div className="section-heading">
               <div>
                 <div className="eyebrow">Launch zone</div>
-                <h2>Test area</h2>
+                <h2>Try it here</h2>
               </div>
-              <p>Check movement, flame timing, and hidden zones.</p>
+              <p>Move here. The red block is excluded.</p>
             </div>
 
             <div className="test-area">
               <div className="test-copy">
                 <h3>Open area</h3>
-                <p>
-                  Move around to check alignment, rotation, and flame fade.
-                </p>
+                <p>Check alignment, rotation, and the motion fade.</p>
               </div>
 
               <div className="excluded-area no-rocket-cursor">
                 <span className="zone-tag">Shielded sector</span>
-                <p>The rocket is disabled here via `no-rocket-cursor`.</p>
+                <p>Hidden here via `no-rocket-cursor`.</p>
               </div>
             </div>
           </section>

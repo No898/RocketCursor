@@ -1,6 +1,6 @@
 # Rocket Cursor Component
 
-A customizable React component that replaces the mouse cursor with an animated rocket that rotates based on movement and displays a flame effect when in motion.
+A React cursor library with a built-in animated rocket and a generic `CursorFollower` for custom visuals.
 
 ## Installation
 
@@ -20,7 +20,9 @@ npm install rocket-cursor-component
 
 ## Usage
 
-Here's an example of how to use the `RocketCursor` component in your React app:
+### Built-in rocket
+
+Use the default export when you want the packaged rocket visuals:
 
 ```tsx
 import React from "react";
@@ -50,7 +52,7 @@ function App() {
 export default App;
 ```
 
-### Props
+### `RocketCursor` props
 
 | Prop               | Type    | Default | Description                                                |
 | ------------------ | ------- | ------- | ---------------------------------------------------------- |
@@ -67,9 +69,92 @@ export default App;
 | `followSpeed`      | number  | `0.18`  | Follow smoothing (0-1). Higher = faster/snappier following. |
 | `zIndex`           | number  | `9999`  | Wrapper stacking order for the rocket cursor.              |
 
+### Build your own cursor
+
+Use the named `CursorFollower` export when you want the motion engine without the rocket art:
+
+```tsx
+import { CursorFollower } from "rocket-cursor-component";
+
+function CometCursor({ isMoving }: { isMoving: boolean }) {
+  return (
+    <div
+      style={{
+        position: "relative",
+        width: "100%",
+        height: "100%",
+      }}
+    >
+      <div
+        style={{
+          position: "absolute",
+          left: "4%",
+          top: "50%",
+          width: "58%",
+          height: "34%",
+          borderRadius: 999,
+          filter: "blur(12px)",
+          opacity: isMoving ? 1 : 0.58,
+          transform: `translateY(-50%) scaleX(${isMoving ? 1 : 0.76})`,
+          transformOrigin: "center right",
+          transition: "opacity 140ms ease, transform 140ms ease",
+          background:
+            "linear-gradient(90deg, rgba(92,198,196,0), rgba(92,198,196,0.24) 26%, rgba(118,171,255,0.65) 62%, rgba(255,214,146,0.98))",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          right: "14%",
+          top: "50%",
+          width: "34%",
+          aspectRatio: "1 / 1",
+          borderRadius: "50%",
+          transform: "translateY(-50%)",
+          background:
+            "radial-gradient(circle at 35% 35%, #fff8ef 0 12%, #ffd170 26%, #ff8b5c 56%, #73b9ff 100%)",
+          boxShadow:
+            "0 0 22px rgba(255, 181, 115, 0.45), 0 0 42px rgba(115, 185, 255, 0.28)",
+        }}
+      />
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <CursorFollower
+      anchorOffset={{ x: 14, y: 0 }}
+      followSpeed={0.22}
+      width={72}
+      height={48}
+      movingTimeout={220}
+    >
+      {({ isMoving }) => <CometCursor isMoving={isMoving} />}
+    </CursorFollower>
+  );
+}
+```
+
+### `CursorFollower` props
+
+`CursorFollower` includes the shared props from `RocketCursor` (`className`, `disabled`, `disableOnCoarsePointer`, `excludeSelector`, `followSpeed`, `hideCursor`, `isVisible`, `respectReducedMotion`, `threshold`, `zIndex`) and adds:
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `anchorOffset` | `{ x: number; y: number }` | `{ x: 0, y: 0 }` | Shifts the cursor anchor inside your artwork. |
+| `children` | `ReactNode \| (state) => ReactNode` | required | Static content or a render function that receives `{ isMoving, visible }`. |
+| `movingTimeout` | `number` | `300` | Delay before `isMoving` flips back to `false`. |
+| `rotateWithMovement` | `boolean` | `true` | Rotates the content in the direction of travel. |
+| `rotationOffset` | `number` | `0` | Adds a fixed angle offset for artwork that points somewhere other than right. |
+| `width` | `number` | `48` | Wrapper width in pixels. |
+| `height` | `number` | `48` | Wrapper height in pixels. |
+| `wrapperProps` | `HTMLAttributes<HTMLDivElement>` | `undefined` | Extra attributes for the fixed wrapper, including `data-*` hooks. |
+
 ## Features
 
 - **React 18+ Compatible**: Works with modern React 18 and React 19 applications
+- **Generic Motion Engine**: Export `CursorFollower` to plug in your own SVG, HTML, or CSS-based cursor visuals
 - **Dual Cursor Mode**: Choose to replace cursor completely or show rocket alongside normal cursor
 - **Custom Cursor**: Replaces the default mouse cursor with a rocket that follows the cursor and aligns its nose to the pointer
 - **Smart Rotation**: The rocket rotates in the direction of cursor movement with configurable threshold
@@ -116,6 +201,10 @@ Here's a demo of the Rocket Cursor in action:
 > Local demo (not published to npm): run `npm install` and `npm run demo`, then open the Vite dev server printed in the console.
 
 ## Changelog
+
+### Unreleased
+- **NEW**: Exported `CursorFollower` for custom cursor visuals
+- **NEW**: Added generic API smoke coverage and demo mode for a custom comet cursor
 
 ### 2.1.0
 - **NEW**: Added `followSpeed` prop for configurable smoothing (nose snaps to cursor when close)
