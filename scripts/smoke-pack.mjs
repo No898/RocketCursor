@@ -14,16 +14,24 @@ const consumerDir = path.join(tempDir, "consumer");
 await mkdir(tarballDir);
 await mkdir(consumerDir);
 
+const parsePackOutput = (output) => {
+  const match = output.match(/(\[\s*\{[\s\S]*\}\s*\])\s*$/);
+
+  if (!match) {
+    throw new Error(
+      `Unable to parse npm pack JSON output.\nReceived output:\n${output}`
+    );
+  }
+
+  return JSON.parse(match[1]);
+};
+
 try {
-  const packResult = JSON.parse(
-    execFileSync(
-      "npm",
-      ["pack", "--json", "--ignore-scripts", "--pack-destination", tarballDir],
-      {
-        cwd: repoRoot,
-        encoding: "utf8",
-      }
-    )
+  const packResult = parsePackOutput(
+    execFileSync("npm", ["pack", "--json", "--ignore-scripts", "--pack-destination", tarballDir], {
+      cwd: repoRoot,
+      encoding: "utf8",
+    })
   );
   const tarballPath = path.join(tarballDir, packResult[0].filename);
   const reactVersion = rootPackageJson.devDependencies.react;
