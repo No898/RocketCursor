@@ -10,12 +10,63 @@ function App() {
   const [isVisible, setIsVisible] = React.useState(true);
   const [hideCursor, setHideCursor] = React.useState(false);
   const [followSpeed, setFollowSpeed] = React.useState(0.15);
+  const [activePreset, setActivePreset] = React.useState<string | null>("Cruise");
+  const presets = [
+    {
+      name: "Arcade",
+      description: "Fast and playful",
+      values: {
+        flameHideTimeout: 220,
+        followSpeed: 0.42,
+        hideCursor: false,
+        isVisible: true,
+        size: 56,
+        threshold: 6,
+      },
+    },
+    {
+      name: "Cruise",
+      description: "Balanced default",
+      values: {
+        flameHideTimeout: 300,
+        followSpeed: 0.15,
+        hideCursor: false,
+        isVisible: true,
+        size: 50,
+        threshold: 10,
+      },
+    },
+    {
+      name: "Stealth",
+      description: "Rocket-only mode",
+      values: {
+        flameHideTimeout: 180,
+        followSpeed: 0.26,
+        hideCursor: true,
+        isVisible: true,
+        size: 42,
+        threshold: 14,
+      },
+    },
+  ];
   const telemetry = [
     { label: 'Rocket size', value: `${size}px` },
     { label: 'Follow speed', value: `${Math.round(followSpeed * 100)}%` },
     { label: 'Flame delay', value: `${flameHideTimeout}ms` },
     { label: 'Rotation threshold', value: `${threshold}px` },
   ];
+  const clearActivePreset = () => {
+    setActivePreset(null);
+  };
+  const applyPreset = (preset: (typeof presets)[number]) => {
+    setSize(preset.values.size);
+    setThreshold(preset.values.threshold);
+    setFlameHideTimeout(preset.values.flameHideTimeout);
+    setIsVisible(preset.values.isVisible);
+    setHideCursor(preset.values.hideCursor);
+    setFollowSpeed(preset.values.followSpeed);
+    setActivePreset(preset.name);
+  };
 
   return (
     <>
@@ -44,6 +95,20 @@ function App() {
                 <p className="lead">
                   Adjust the cursor, move around the page, and see how the rocket responds.
                 </p>
+
+                <div className="preset-row">
+                  {presets.map((preset) => (
+                    <button
+                      className={`preset-button${activePreset === preset.name ? ' is-active' : ''}`}
+                      key={preset.name}
+                      onClick={() => applyPreset(preset)}
+                      type="button"
+                    >
+                      <strong>{preset.name}</strong>
+                      <span>{preset.description}</span>
+                    </button>
+                  ))}
+                </div>
 
                 <div className="telemetry-grid">
                   {telemetry.map((item) => (
@@ -111,7 +176,10 @@ function App() {
                   min="20"
                   max="150"
                   value={size}
-                  onChange={(e) => setSize(Number(e.target.value))}
+                  onChange={(e) => {
+                    clearActivePreset();
+                    setSize(Number(e.target.value));
+                  }}
                 />
               </div>
 
@@ -126,7 +194,10 @@ function App() {
                   min="1"
                   max="50"
                   value={threshold}
-                  onChange={(e) => setThreshold(Number(e.target.value))}
+                  onChange={(e) => {
+                    clearActivePreset();
+                    setThreshold(Number(e.target.value));
+                  }}
                 />
               </div>
 
@@ -142,7 +213,10 @@ function App() {
                   max="1000"
                   step="50"
                   value={flameHideTimeout}
-                  onChange={(e) => setFlameHideTimeout(Number(e.target.value))}
+                  onChange={(e) => {
+                    clearActivePreset();
+                    setFlameHideTimeout(Number(e.target.value));
+                  }}
                 />
               </div>
 
@@ -158,7 +232,10 @@ function App() {
                   max="1"
                   step="0.05"
                   value={followSpeed}
-                  onChange={(e) => setFollowSpeed(Number(e.target.value))}
+                  onChange={(e) => {
+                    clearActivePreset();
+                    setFollowSpeed(Number(e.target.value));
+                  }}
                 />
                 <small>Lower values add drift, higher values tighten the pursuit.</small>
               </div>
@@ -169,7 +246,10 @@ function App() {
                 <input
                   type="checkbox"
                   checked={isVisible}
-                  onChange={(e) => setIsVisible(e.target.checked)}
+                  onChange={(e) => {
+                    clearActivePreset();
+                    setIsVisible(e.target.checked);
+                  }}
                 />
                 <span>
                   <strong>Show rocket</strong>
@@ -181,7 +261,10 @@ function App() {
                 <input
                   type="checkbox"
                   checked={hideCursor}
-                  onChange={(e) => setHideCursor(e.target.checked)}
+                  onChange={(e) => {
+                    clearActivePreset();
+                    setHideCursor(e.target.checked);
+                  }}
                 />
                 <span>
                   <strong>Hide system cursor</strong>
