@@ -3,18 +3,130 @@ import ReactDOM from 'react-dom/client';
 import RocketCursor, { CursorFollower } from '../src';
 import './styles.css';
 
-type CursorMode = 'rocket' | 'comet';
+type CursorMode = 'rocket' | 'starship';
 
-function CometCursor({ isMoving }: { isMoving: boolean }) {
+function StarshipCursor({ isMoving }: { isMoving: boolean }) {
+  const hullGradientId = React.useId();
+  const nacelleGradientId = React.useId();
+  const trailGradientId = React.useId();
+  const shadowId = React.useId();
+
   return (
-    <div className={`comet-cursor${isMoving ? ' is-moving' : ''}`}>
-      <span className="comet-tail" />
-      <span className="comet-glow" />
-      <span className="comet-core" />
-      <span className="comet-ring" />
-      <span className="comet-spark comet-spark-a" />
-      <span className="comet-spark comet-spark-b" />
-    </div>
+    <svg
+      aria-hidden="true"
+      height="100%"
+      viewBox="0 0 240 120"
+      width="100%"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        <linearGradient id={hullGradientId} x1="44" y1="34" x2="212" y2="92" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#eef6ff" />
+          <stop offset="0.48" stopColor="#b9cbdf" />
+          <stop offset="1" stopColor="#6d7f97" />
+        </linearGradient>
+        <linearGradient id={nacelleGradientId} x1="32" y1="20" x2="232" y2="20" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#61d2d7" />
+          <stop offset="0.45" stopColor="#8eafff" />
+          <stop offset="1" stopColor="#ffe3b0" />
+        </linearGradient>
+        <linearGradient id={trailGradientId} x1="8" y1="60" x2="82" y2="60" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#76abff" stopOpacity="0" />
+          <stop offset="0.55" stopColor="#76abff" stopOpacity="0.32" />
+          <stop offset="1" stopColor="#b1e7ff" stopOpacity="0.94" />
+        </linearGradient>
+        <filter id={shadowId} x="-30%" y="-50%" width="160%" height="200%">
+          <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="#55adff" floodOpacity="0.3" />
+        </filter>
+      </defs>
+
+      <g
+        style={{
+          opacity: isMoving ? 1 : 0.35,
+          transform: `scaleX(${isMoving ? 1 : 0.82})`,
+          transformOrigin: '70px 60px',
+          transition: 'opacity 140ms ease, transform 140ms ease',
+        }}
+      >
+        <path
+          d="M12 60C27 47 42 44 64 47L84 52L84 68L64 73C42 76 27 73 12 60Z"
+          fill={`url(#${trailGradientId})`}
+        />
+        <path
+          d="M24 60C35 52 50 51 72 53"
+          stroke="rgba(227, 247, 255, 0.8)"
+          strokeLinecap="round"
+          strokeWidth="2.4"
+        />
+        <path
+          d="M24 60C35 68 50 69 72 67"
+          stroke="rgba(148, 207, 255, 0.6)"
+          strokeLinecap="round"
+          strokeWidth="2"
+        />
+      </g>
+
+      <g filter={`url(#${shadowId})`}>
+        <path
+          d="M80 53C95 39 126 34 154 42L166 46L188 51L202 60L188 69L166 74L154 78C126 86 95 81 80 67L92 60L80 53Z"
+          fill={`url(#${hullGradientId})`}
+          stroke="#f5f9ff"
+          strokeOpacity="0.45"
+          strokeWidth="1.4"
+        />
+        <ellipse cx="78" cy="60" rx="38" ry="17" fill="rgba(220, 232, 248, 0.92)" />
+        <path
+          d="M44 60C50 50 62 44 78 44C96 44 111 51 116 60C111 69 96 76 78 76C62 76 50 70 44 60Z"
+          fill="rgba(248, 252, 255, 0.96)"
+          stroke="rgba(103, 125, 154, 0.58)"
+          strokeWidth="1.2"
+        />
+        <path
+          d="M55 60H118"
+          stroke="rgba(95, 120, 150, 0.45)"
+          strokeLinecap="round"
+          strokeWidth="1.4"
+        />
+        <path
+          d="M106 56L140 49"
+          stroke="#9aaeca"
+          strokeLinecap="round"
+          strokeWidth="5.2"
+        />
+        <path
+          d="M106 64L140 71"
+          stroke="#9aaeca"
+          strokeLinecap="round"
+          strokeWidth="5.2"
+        />
+        <path
+          d="M108 44L152 24H210C216 24 220 27 220 32C220 37 216 40 210 40H160"
+          fill="rgba(163, 177, 204, 0.58)"
+          stroke="#bccbdd"
+          strokeLinejoin="round"
+          strokeWidth="1.2"
+        />
+        <path
+          d="M108 76L152 96H210C216 96 220 93 220 88C220 83 216 80 210 80H160"
+          fill="rgba(163, 177, 204, 0.58)"
+          stroke="#bccbdd"
+          strokeLinejoin="round"
+          strokeWidth="1.2"
+        />
+        <rect x="156" y="26" width="68" height="12" rx="6" fill={`url(#${nacelleGradientId})`} />
+        <rect x="156" y="82" width="68" height="12" rx="6" fill={`url(#${nacelleGradientId})`} />
+        <ellipse cx="217" cy="32" rx="10" ry="5.5" fill="#ffe8be" />
+        <ellipse cx="217" cy="88" rx="10" ry="5.5" fill="#ffe8be" />
+        <ellipse cx="193" cy="60" rx="9" ry="11" fill="#66d0d4" />
+        <path
+          d="M135 60H186"
+          stroke="rgba(245, 251, 255, 0.8)"
+          strokeLinecap="round"
+          strokeWidth="2.2"
+        />
+        <circle cx="78" cy="60" r="8" fill="#9cc7ff" fillOpacity="0.22" />
+      </g>
+    </svg>
   );
 }
 
@@ -27,8 +139,8 @@ function App() {
   const [followSpeed, setFollowSpeed] = React.useState(0.15);
   const [cursorMode, setCursorMode] = React.useState<CursorMode>('rocket');
   const [activePreset, setActivePreset] = React.useState<string | null>("Cruise");
-  const cursorLabel = cursorMode === 'rocket' ? 'Rocket' : 'Comet';
-  const motionLabel = cursorMode === 'rocket' ? 'Flame' : 'Tail';
+  const cursorLabel = cursorMode === 'rocket' ? 'Rocket' : 'Starship';
+  const motionLabel = cursorMode === 'rocket' ? 'Flame' : 'Warp trail';
   const presets = [
     {
       name: "Arcade",
@@ -99,17 +211,17 @@ function App() {
         />
       ) : (
         <CursorFollower
-          anchorOffset={{ x: size * 0.24, y: 0 }}
+          anchorOffset={{ x: size * 0.68, y: 0 }}
           followSpeed={followSpeed}
           height={size}
           hideCursor={hideCursor}
           isVisible={isVisible}
           movingTimeout={flameHideTimeout}
           threshold={threshold}
-          width={Math.round(size * 1.4)}
+          width={Math.round(size * 2)}
           zIndex={9999}
         >
-          {({ isMoving }) => <CometCursor isMoving={isMoving} />}
+          {({ isMoving }) => <StarshipCursor isMoving={isMoving} />}
         </CursorFollower>
       )}
 
@@ -126,7 +238,7 @@ function App() {
             <div className="hero-grid">
               <div className="hero-copy">
                 <h1>Built-in rocket. Custom-ready motion.</h1>
-                <p className="lead">Switch modes, tune the movement, and test the exclusion zone.</p>
+                <p className="lead">Switch modes, tune the movement, and test a custom SVG starship.</p>
 
                 <div className="mode-row" role="group" aria-label="Cursor mode">
                   <button
@@ -138,12 +250,12 @@ function App() {
                     <span>Built-in preset</span>
                   </button>
                   <button
-                    className={`mode-button${cursorMode === 'comet' ? ' is-active' : ''}`}
-                    onClick={() => setCursorMode('comet')}
+                    className={`mode-button${cursorMode === 'starship' ? ' is-active' : ''}`}
+                    onClick={() => setCursorMode('starship')}
                     type="button"
                   >
-                    <strong>Comet</strong>
-                    <span>Custom `CursorFollower`</span>
+                    <strong>Starship</strong>
+                    <span>Custom SVG `CursorFollower`</span>
                   </button>
                 </div>
 
