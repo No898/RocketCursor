@@ -92,6 +92,8 @@ Useful maintenance commands:
 
 ```bash
 npm run typecheck
+npm run test
+npm run test:package
 npm run build
 npm run check
 ```

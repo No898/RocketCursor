@@ -13,6 +13,6 @@
     "skipLibCheck": true,
     "types": ["node"]
   },
-  "include": ["demo", "src", "tsup.config.ts", "vite.config.ts"],
+  "include": ["demo", "src", "tsup.config.ts", "vite.config.ts", "vitest.config.ts", "vitest.setup.ts"],
   "exclude": ["dist", "node_modules"]
 }
