@@ -157,8 +157,8 @@
     </div>
 
     <div class="content">
-      <h1>RocketCursor Centered Test</h1>
-      <p>Cursor is in the center of the rocket + normal cursor is also visible!</p>
+      <h1>RocketCursor Following Test</h1>
+      <p>Rocket follows the pointer, rotates by movement direction, and keeps its nose aligned with the cursor.</p>
 
       <div class="controls">
         <label>
@@ -172,21 +172,23 @@
           <span id="sizeValue">50</span>px
         </label>
         <label>
-          Offset X:
-          <input type="range" id="offsetX" min="-50" max="50" value="-15" />
-          <span id="offsetXValue">-15</span>px
-        </label>
-        <label>
-          Offset Y:
-          <input type="range" id="offsetY" min="-50" max="50" value="0" />
-          <span id="offsetYValue">0</span>px
+          Follow speed:
+          <input
+            type="range"
+            id="followSpeed"
+            min="0.05"
+            max="1"
+            step="0.05"
+            value="0.18"
+          />
+          <span id="followSpeedValue">18</span>%
         </label>
       </div>
 
       <div class="test-area">
         <h2>Test Area</h2>
         <p>
-          Move your mouse around the screen! Cursor is in the center of the rocket and the rocket rotates according to movement direction.
+          Move your mouse around the screen. The rocket rotates by movement direction and smoothly follows the cursor.
         </p>
         <p>Flames appear when you move the mouse. Normal cursor is also visible.</p>
       </div>
@@ -200,17 +202,14 @@
       // Controls
       const thresholdSlider = document.getElementById("followDistance");
       const rocketSizeSlider = document.getElementById("rocketSize");
-      const offsetXSlider = document.getElementById("offsetX");
-      const offsetYSlider = document.getElementById("offsetY");
+      const followSpeedSlider = document.getElementById("followSpeed");
       const distanceValue = document.getElementById("distanceValue");
       const sizeValue = document.getElementById("sizeValue");
-      const offsetXValue = document.getElementById("offsetXValue");
-      const offsetYValue = document.getElementById("offsetYValue");
+      const followSpeedValue = document.getElementById("followSpeedValue");
 
       let threshold = 5;
       let rocketSize = 50;
-      let offsetX = -15;
-      let offsetY = 0;
+      let followSpeed = 0.18;
 
       // Update controls
       thresholdSlider.addEventListener("input", (e) => {
@@ -225,14 +224,9 @@
         cursor.style.height = rocketSize * 1.5 + "px";
       });
 
-      offsetXSlider.addEventListener("input", (e) => {
-        offsetX = Number(e.target.value);
-        offsetXValue.textContent = offsetX;
-      });
-
-      offsetYSlider.addEventListener("input", (e) => {
-        offsetY = Number(e.target.value);
-        offsetYValue.textContent = offsetY;
+      followSpeedSlider.addEventListener("input", (e) => {
+        followSpeed = Number(e.target.value);
+        followSpeedValue.textContent = Math.round(followSpeed * 100);
       });
 
       // Rocket position tracking
@@ -253,9 +247,9 @@
         debug.innerHTML = `
                 Mouse: ${Math.round(mouseX)}, ${Math.round(mouseY)}<br>
                 Rocket: ${Math.round(rocketX)}, ${Math.round(rocketY)}<br>
-                Offset: ${offsetX}, ${offsetY}<br>
                 Angle: ${Math.round(rocketAngle)}°<br>
                 Threshold: ${threshold}px<br>
+                Follow speed: ${Math.round(followSpeed * 100)}%<br>
                 Flame: ${showFlame}
             `;
       }
@@ -276,28 +270,38 @@
           lastPos.y = mouseY;
         }
 
-        // Set rocket position on cursor with offset
-        target.x = mouseX + offsetX;
-        target.y = mouseY + offsetY;
+        target.x = mouseX;
+        target.y = mouseY;
 
         lastMoveTs = Date.now();
       }
 
       function animate() {
-        // Move rocket directly to cursor position
-        current.x = target.x;
-        current.y = target.y;
+        const dx = target.x - current.x;
+        const dy = target.y - current.y;
+        const distanceToTarget = Math.hypot(dx, dy);
 
-        // Show flame based on recent mouse movement
+        if (distanceToTarget < 0.5) {
+          current.x = target.x;
+          current.y = target.y;
+        } else {
+          current.x += dx * followSpeed;
+          current.y += dy * followSpeed;
+        }
+
         const showFlame = Date.now() - lastMoveTs < 300;
+        const dirRad = (angle - 45) * (Math.PI / 180);
+        const noseOffset = rocketSize * 0.35;
+        const noseX = Math.cos(dirRad) * noseOffset;
+        const noseY = Math.sin(dirRad) * noseOffset;
 
-        // Update rocket position and rotation
-        cursor.style.transform = `translate3d(${current.x}px, ${current.y}px, 0)`;
+        cursor.style.transform = `translate3d(${current.x - noseX}px, ${
+          current.y - noseY
+        }px, 0) translate(-50%, -50%)`;
         
-        // Update SVG rotation centered
         const svg = cursor.querySelector('svg');
         if (svg) {
-          svg.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
+          svg.style.transform = `rotate(${angle}deg)`;
         }
         flame.style.opacity = showFlame ? "1" : "0";
 
@@ -308,10 +312,10 @@
       }
 
       // Initialize
-      cursor.style.transform = `translate3d(${current.x}px, ${current.y}px, 0)`;
+      cursor.style.transform = `translate3d(${current.x}px, ${current.y}px, 0) translate(-50%, -50%)`;
       const svg = cursor.querySelector('svg');
       if (svg) {
-        svg.style.transform = `translate(-50%, -50%) rotate(0deg)`;
+        svg.style.transform = `rotate(0deg)`;
       }
       updateDebug(current.x, current.y, current.x, current.y, 0, false);
 
