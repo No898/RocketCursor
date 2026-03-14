@@ -36,15 +36,16 @@ jobs:
 
     permissions:
       contents: read
+      id-token: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Use Node.js from .nvmrc
+      - name: Use Node.js for trusted publishing
         uses: actions/setup-node@v4
         with:
-          node-version-file: ".nvmrc"
+          node-version: "24"
           cache: npm
           registry-url: "https://registry.npmjs.org"
 
@@ -71,5 +72,3 @@ jobs:
       - name: Publish to npm
         if: steps.release_state.outputs.should_publish == 'true'
         run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

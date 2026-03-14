@@ -332,6 +332,14 @@ Update the package version, then merge the change into `main` or `master`.
 
 The release workflow runs only on pushes to `main` and `master`, plus manual dispatches from those branches. It publishes only when `package.json` is ahead of the current npm version, so routine merges without a version bump are skipped cleanly.
 
+Publishing uses npm trusted publishing via GitHub Actions OIDC. Configure the package on npm with:
+
+- publisher: `GitHub Actions`
+- organization or user: `No898`
+- repository: `RocketCursor`
+- workflow filename: `ci.yml`
+- environment name: leave empty unless you use a protected GitHub Actions environment
+
 Recommended flow:
 
 - run `npm run version:patch`, `npm run version:minor`, or `npm run version:major`
@@ -339,7 +347,7 @@ Recommended flow:
 - merge the branch into `main` or `master`
 - let GitHub Actions publish automatically, or trigger the release workflow manually from `main`/`master`
 
-The release workflow expects an `NPM_TOKEN` repository secret with publish access.
+After trusted publishing is configured, you do not need an `NPM_TOKEN` secret for releases.
 
 If you want to verify the version manually before tagging, run:
 
