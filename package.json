@@ -31,6 +31,10 @@
     "test:package": "node ./scripts/smoke-pack.mjs",
     "typecheck": "tsc --noEmit",
     "version:check": "node ./scripts/version-status.mjs --require-ahead",
+    "version:major": "node ./scripts/bump-version.mjs major",
+    "version:minor": "node ./scripts/bump-version.mjs minor",
+    "version:patch": "node ./scripts/bump-version.mjs patch",
+    "version:prerelease": "node ./scripts/bump-version.mjs prerelease --preid rc",
     "version:status": "node ./scripts/version-status.mjs"
   },
   "files": [

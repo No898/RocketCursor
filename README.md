@@ -306,6 +306,8 @@ npm run test
 npm run test:package
 npm run build
 npm run check
+npm run version:status
+npm run version:check
 npm run check:published
 ```
 
@@ -326,6 +328,7 @@ Then open the Vite URL printed in the terminal.
 
 Update the package version, then either:
 
+- run `npm run version:patch`, `npm run version:minor`, or `npm run version:major`
 - push a tag in the format `vX.Y.Z`
 - or trigger the release workflow manually
 
@@ -334,7 +337,15 @@ The release workflow expects an `NPM_TOKEN` repository secret with publish acces
 If you want to verify the version manually before tagging, run:
 
 ```bash
+npm run version:status
+npm run version:check
 npm run check:published
+```
+
+For a dry run without changing `package.json`, you can preview the next version:
+
+```bash
+node ./scripts/bump-version.mjs patch --dry-run
 ```
 
 ## Changelog
